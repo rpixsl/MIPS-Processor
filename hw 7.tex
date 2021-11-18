@@ -1,0 +1,120 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage}
+\usepackage{amssymb, color, tcolorbox, amsmath, graphicx, listings, framed}
+\lstset{ basicstyle=\footnotesize\ttfamily, columns = flexible, breaklines = true, commentstyle = \color{red}, keywordstyle = \color{black}\bfseries }
+\begin{document}
+
+\newcommand{\D}{\displaystyle}
+\newcommand{\vc}[1]{\,\mathbf{#1}}
+
+%The basic information of the document
+{\bf \noindent Tianrui Qi  \hfill qit3@rpi.edu \\ Homework \#7, Probability Theory \hfill \today}\\ \hrule\bigskip
+
+
+
+% Problem 1 --------------------
+\subsection*{\bf Problem 5.1}
+	
+	\noindent{\bf Solution. }
+	Since $X, Y$ are Poisson variables with respective means $\lambda$ and $\mu$, we have that
+	$$P\left( X=k\right)  =e^{-\lambda }\lambda^{k} \frac{1}{k!} \qquad P\left( Y=k\right)  =e^{-\mu }\mu^{k} \frac{1}{k!} $$
+	With condition $X+Y = n$, we have that
+	$$P\left( X=k|X+Y=n\right)  =\frac{P\left( X=k,X+Y=n\right)  }{P\left( X+Y=n\right)  } =\frac{P\left( X=k,Y=n-k\right)  }{P\left( X+Y=n\right)  } $$
+	Since $X$ and $Y$ are independent, follows that 
+	$$P\left( X=k,Y=n-k\right)  =P\left( X=k\right)  P\left( Y=n-k\right)  =\frac{e^{-\lambda }\lambda^{k} }{k!} \cdot \frac{e^{-\mu }\mu^{n-k} }{\left( n-k\right)  !}   $$
+	$$P\left( X+Y=n\right)  =\frac{e^{-\left( \lambda +\mu \right)  }\left( \lambda +\mu \right)^{n}  }{n!}  $$
+	Substituting back, we have that 
+	$$\begin{aligned}
+		P\left( X=k|X+Y=n\right) 
+		&=\frac{P\left( X=k,Y=n-k\right)  }{P\left( X+Y=n\right)  } \\
+		&=\frac{e^{-\lambda }\lambda^{k} }{k!} \cdot \frac{e^{-\mu }\mu^{n-k} }{\left( n-k\right)  !} /\frac{e^{-\left( \lambda +\mu \right)  }\left( \lambda +\mu \right)^{n}  }{n!} \\ 
+		&=\frac{e^{-\lambda }\lambda^{k} }{k!} \cdot \frac{e^{-\mu }\mu^{n-k} }{\left( n-k\right)  !} \cdot \frac{n!}{e^{-\left( \lambda +\mu \right)  }\left( \lambda +\mu \right)^{n}  } \\ 
+		&=\frac{e^{-\lambda }\lambda^{k} }{k!} \cdot \frac{e^{-\mu }\mu^{n-k} }{\left( n-k\right)  !} \cdot \frac{n!}{e^{-\lambda }e^{-\mu }\cdot \left( \lambda +\mu \right)^{k}  \left( \lambda +\mu \right)^{n-k}  } \\ 
+		&=\frac{1}{k!} \cdot \frac{1}{\left( n-k\right)  !} \cdot n!\cdot \left( \frac{\lambda }{\lambda +\mu } \right)^{k}  \left( \frac{\mu }{\lambda +\mu } \right)^{n-k}  \\ 
+		&=\begin{pmatrix}n\\ k\end{pmatrix} \left( \frac{\lambda }{\lambda +\mu } \right)^{k}  \left( 1-\frac{\lambda }{\lambda +\mu } \right)^{n-k}  
+	\end{aligned} $$
+	Let $\D p = \frac{\lambda }{\lambda +\mu } $ and substituting back, we have that 
+	$$\boxed{ P\left( X=k|X+Y=n\right)=\begin{pmatrix}n\\ k\end{pmatrix} \left( p\right)^{k}  \left( 1-p\right)^{n-k}  =\text{Bin}(n, p) \qquad p = \frac{\lambda }{\lambda +\mu } }$$
+	which complete the proof. 
+	\\
+
+
+
+%{\noindent \color{blue} ( Problem 5.6 in next page )}
+%\newpage
+
+
+
+% Problem 2 --------------------
+\subsection*{\bf Problem 5.6}
+
+	\noindent{\bf Solution. }
+	Let's define
+	$$X_i=\begin{cases}0&\text{not match} \\ 1&\text{match} \end{cases} $$
+	where $\D S_{n}=\sum^{n}_{i=1} X_{i}$ be the total number of match.
+	Notes that 
+	$$P\left( X_{i}=1\right)  =\frac{1}{n} \qquad E\left[ X_{i}\right]  =1\cdot \frac{1}{n} +0\cdot \frac{n-1}{n} =\frac{1}{n} $$
+	$$\text{Var} \left[ X_{i}\right]  =1\cdot \left( 1-\frac{1}{n} \right)  +0\cdot \left( 0-\frac{n-1}{n} \right)  =1-\frac{1}{n} $$ 
+	By the definition of condition, we have that 
+	$$\begin{aligned}
+		P\left( X_{j}=1|X_{i}=1\right)  
+		&=\frac{1}{n-1} =\frac{P\left( X_{j}=1,X_{i}=1\right)  }{P\left( X_{i}=1\right)  } \\ P\left( X_{j}=1,X_{i}=1\right)  
+		&=P\left( X_{i}=1\right)  \frac{1}{n-1} =\frac{1}{n\left( n-1\right)  } 
+	\end{aligned} $$
+	$$\text{Cov} \left( X_{i},X_{j}\right)  =E\left[ XY\right]  -E\left[ X\right]  E\left[ Y\right]=\frac{1}{n\left( n-1\right)  } -\frac{1}{n^{2}}$$
+	Then, we have that 
+	$$\boxed{ E\left[ S_{n}\right]  =\sum^{n}_{i=1} E\left[ X_{i}\right] =\sum^{n}_{i=1} \frac{1}{n} =1 }$$	
+	$$\boxed{ \begin{aligned}
+		\text{Var} \left[ S_{n}\right]  
+		&=\sum^{n}_{i=1} \text{Var} \left[ X_{i}\right]  +2\sum_{i<j} \text{Cov} \left[ X_{i},X_{j}\right]  \\ 
+		&=n\cdot \left( 1-\frac{1}{n} \right)  +2\cdot \frac{1}{2} n\left( n-1\right)  \cdot \left( \frac{1}{n\left( n-1\right)  } -\frac{1}{n^{2}} \right)  \\ 
+		&= 1
+	\end{aligned} } $$
+	\\
+
+
+
+%{\noindent \color{blue} ( Problem 5.7 in next page )}
+%\newpage
+
+
+
+% Problem 3 --------------------
+\subsection*{\bf Problem 5.7}
+
+	\noindent{\bf Solution. }
+	Since $P(I=1 | J=1) = P(I=1)$, we have that
+	$$\begin{aligned}
+		\begin{aligned}
+			P\left( I=1|J=1\right)
+				&=\frac{P\left( I=1,J=1\right)  }{P\left( J=1\right)  } =P\left( I=1\right)  \\
+			P\left( I=1,J=1\right)  
+				&=\boxed{P\left( I=1\right)  P\left( J=1\right) }\\
+			P\left( I=1\right)
+				&=P\left( I=1,J=0\right)  +P\left( I=1,J=1\right)  \\ 
+			P\left( I=1,J=0\right)  
+				&=P\left( I=1\right)  -P\left( I=1,J=1\right)  \\ 
+				&=P\left( I=1\right)  -P\left( I=1\right)  P\left( J=1\right)  \\ 
+				&=P\left( I=1\right)  \left( 1-P\left( J=1\right)  \right)  \\ 
+				&=\boxed{P\left( I=1\right)  P\left( J=0\right) } \\ 
+			P\left( J=1\right)  
+				&=P\left( I=0,J=1\right)  +P\left( I=1,J=1\right)  \\ P\left( I=0,J=1\right)  
+				&=P\left( J=1\right)  -P\left( I=1,J=1\right)  \\ 
+				&=P\left( J=1\right)  -P\left( I=1\right)  P\left( J=1\right)  \\ 
+				&=P\left( J=1\right)  \left( 1-P\left( I=1\right)  \right)  \\ 
+				&=\boxed{P\left( I=0\right)  P\left( J=1\right) } \\ 
+			P\left( I=0\right)  
+				&=P\left( I=0,J=0\right)  +P\left( I=0,J=1\right)  \\ 
+			P\left( I=0,J=0\right)  
+				&=P\left( I=0\right)  -P\left( I=0,J=1\right)  \\ 
+				&=P\left( I=0\right)  -P\left( I=0\right)  P\left( J=1\right)  \\ 
+				&=P\left( I=0\right)  \left( 1-P\left( J=1\right)  \right)  \\ 
+				&=\boxed{P\left( I=0\right)  P\left( J=0\right)  }
+		\end{aligned}  
+	\end{aligned} $$
+	Thus, we follows that $P\left( I,J\right) = P\left( I\right)  P\left( J\right)$, which means that $I$ and $J$ are independent and completes the proof.
+	\\
+
+
+
+\end{document}
