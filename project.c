@@ -40,6 +40,7 @@ BIT or_gate  (BIT A, BIT B);
 BIT or_gate3 (BIT A, BIT B, BIT C);
 BIT and_gate (BIT A, BIT B);
 BIT and_gate3(BIT A, BIT B, BIT C);
+BIT and_gate6(BIT A, BIT B, BIT C, BIT D, BIT E, BIT F);
 BIT xor_gate (BIT A, BIT B);
 BIT nor_gate (BIT A, BIT B);
 BIT nand_gate(BIT A, BIT B);
@@ -58,7 +59,7 @@ int  binary_to_integer(const BIT* A);
 int  get_instructions(BIT Instructions[][32]);
 
 void Instruction_Memory(BIT* ReadAddress, BIT* Instruction);
-void Control(BIT* OpCode,
+void Control(const BIT* OpCode, const BIT* funct,
              BIT* RegDst, BIT* ALUSrc, BIT* MemToReg, BIT* RegWrite,
              BIT* MemRead, BIT* MemWrite, BIT* Branch, BIT* Jump, BIT* JMPReg,
              BIT* ALUOp );
@@ -102,6 +103,10 @@ BIT  and_gate(BIT A, BIT B) {
 
 BIT  and_gate3(BIT A, BIT B, BIT C) {
     return and_gate(A, and_gate(B, C));
+}
+
+BIT  and_gate6(BIT A, BIT B, BIT C, BIT D, BIT E, BIT F) {
+    return and_gate(and_gate3(A, B, C) , and_gate3(D, E, F) );
 }
 
 BIT  xor_gate(BIT A, BIT B) {
@@ -291,7 +296,7 @@ void Instruction_Memory(BIT* ReadAddress, BIT* Instruction) {
     // Note: Useful to use a 5-to-32 decoder here
 }
 
-void Control(BIT* OpCode,
+void Control(const BIT* OpCode, const BIT* funct,
              BIT* RegDst, BIT* ALUSrc, BIT* MemToReg, BIT* RegWrite,
              BIT* MemRead, BIT* MemWrite, BIT* Branch, BIT* Jump, BIT* JMPReg,
              BIT* ALUOp ) {
@@ -299,6 +304,69 @@ void Control(BIT* OpCode,
     // Input: opcode field from the instruction
     // OUtput: all control lines get set
     // Note: Can use SOP or similar approaches to determine bits
+    BIT R_type = and_gate6(not_gate(OpCode[5]),
+                           not_gate(OpCode[4]),
+                           not_gate(OpCode[3]),
+                           not_gate(OpCode[2]),
+                           not_gate(OpCode[1]),
+                           not_gate(OpCode[0])
+                           );
+    BIT j      = and_gate6(not_gate(OpCode[5]),
+                           not_gate(OpCode[4]),
+                           not_gate(OpCode[3]),
+                           not_gate(OpCode[2]),
+                           OpCode[1],
+                           not_gate(OpCode[0])
+                           );
+    BIT jal    = and_gate6(not_gate(OpCode[5]),
+                           not_gate(OpCode[4]),
+                           not_gate(OpCode[3]),
+                           not_gate(OpCode[2]),
+                           OpCode[1],
+                           OpCode[0]
+                           );
+    BIT beq    = and_gate6(not_gate(OpCode[5]),
+                           not_gate(OpCode[4]),
+                           not_gate(OpCode[3]),
+                           OpCode[2],
+                           not_gate(OpCode[1]),
+                           not_gate(OpCode[0])
+                           );
+    BIT lw     = and_gate6(OpCode[5],
+                           not_gate(OpCode[4]),
+                           not_gate(OpCode[3]),
+                           not_gate(OpCode[2]),
+                           OpCode[1],
+                           OpCode[0]
+                           );
+    BIT sw     = and_gate6(OpCode[5],
+                           not_gate(OpCode[4]),
+                           OpCode[3],
+                           not_gate(OpCode[2]),
+                           OpCode[1],
+                           OpCode[0]
+                           );
+    BIT addi   = and_gate6(not_gate(OpCode[5]),
+                           not_gate(OpCode[4]),
+                           OpCode[3],
+                           not_gate(OpCode[2]),
+                           not_gate(OpCode[1]),
+                           not_gate(OpCode[0])
+                           );
+
+    BIT RegDst[1]   = ;
+    BIT RegDst[0]   = ;
+    BIT ALUSrc      = ;
+    BIT MemToReg[1] = ;
+    BIT MemToReg[0] = ;
+    BIT RegWrite    = ;
+    BIT MemRead     = ;
+    BIT MemWrite    = ;
+    BIT Branch      = ;
+    BIT Jump        = ;
+    BIT JMPReg      = ;
+    BIT ALUOp[1]    = ;
+    BIT ALUOp[0]    = ;
 }
 
 void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
