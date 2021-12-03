@@ -45,20 +45,24 @@ BIT and_gate6(BIT A, BIT B, BIT C, BIT D, BIT E, BIT F);
 BIT xor_gate (BIT A, BIT B);
 BIT nor_gate (BIT A, BIT B);
 BIT nand_gate(BIT A, BIT B);
+
 // decoder
 void decoder2(BIT I0, BIT I1, BIT* O0, BIT* O1, BIT* O2, BIT* O3);
 void decoder3(BIT* I, BIT EN, BIT* O);
 void decoder5(BIT* I, BIT* O);
+
 // multiplexor
 BIT  multiplexor2(BIT S, BIT I0, BIT I1);
 void multiplexor2_32(BIT S, BIT* I0, BIT* I1, BIT* Output);
 BIT  multiplexor4(BIT S0, BIT S1, BIT I0, BIT I1, BIT I2, BIT I3);
+
 // ALU
 void adder1(BIT A, BIT B, BIT CarryIn, BIT* CarryOut, BIT* Sum);
 void ALU1(BIT A, BIT B, BIT Binvert, BIT CarryIn, BIT Less,
           BIT Op0, BIT Op1, BIT* Result, BIT* CarryOut, BIT* Set);
 void ALU32(BIT* A, BIT* B, BIT Binvert, BIT CarryIn,
            BIT Op0, BIT Op1, BIT* Result, BIT* CarryOut);
+
 // bits operation
 void copy_bits(const BIT* A, BIT* B);
 void print_binary(const BIT* A);
@@ -66,8 +70,10 @@ void convert_to_binary(int a, BIT* A, int length);
 void convert_to_binary_char(int a, char* A, int length);
 int  binary_to_integer(const BIT* A);
 
+// get instructions
 int  get_instructions(BIT Instructions[][32]);
 
+// component
 void Instruction_Memory(BIT* ReadAddress, BIT* Instruction);
 void Control(const BIT* OpCode, const BIT* funct );
 void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
