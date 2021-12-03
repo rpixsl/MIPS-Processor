@@ -311,6 +311,13 @@ void Control(const BIT* OpCode, const BIT* funct,
                            not_gate(OpCode[1]),
                            not_gate(OpCode[0])
                            );
+    BIT jr     = and_gate6(not_gate(funct[5]),
+                           not_gate(funct[4]),
+                           funct[3],
+                           not_gate(funct[2]),
+                           not_gate(funct[1]),
+                           not_gate(funct[0])
+                           );
     BIT j      = and_gate6(not_gate(OpCode[5]),
                            not_gate(OpCode[4]),
                            not_gate(OpCode[3]),
@@ -354,19 +361,24 @@ void Control(const BIT* OpCode, const BIT* funct,
                            not_gate(OpCode[0])
                            );
 
-    BIT RegDst[1]   = ;
-    BIT RegDst[0]   = ;
-    BIT ALUSrc      = ;
-    BIT MemToReg[1] = ;
-    BIT MemToReg[0] = ;
-    BIT RegWrite    = ;
-    BIT MemRead     = ;
-    BIT MemWrite    = ;
-    BIT Branch      = ;
-    BIT Jump        = ;
-    BIT JMPReg      = ;
-    BIT ALUOp[1]    = ;
-    BIT ALUOp[0]    = ;
+    RegDst[1]   = jal;
+    RegDst[0]   = R_type;
+    ALUSrc      = or_gate3(lw, sw, addi);
+    MemToReg[1] = jal;
+    MemToReg[0] = lw;
+    RegWrite    = or_gate(or_gate(
+                                and_gate(R_type, not_gate(jr)) ,
+                                jal
+                                    )  ,
+                          or_gate(lw, addi)
+                          );
+    MemRead     = lw;
+    MemWrite    = sw;
+    Branch      = beq;
+    Jump        = or_gate(j, jal);
+    JMPReg      = and_gate(R_type, jr);
+    ALUOp[1]    = R_type;
+    ALUOp[0]    = beq;
 }
 
 void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
