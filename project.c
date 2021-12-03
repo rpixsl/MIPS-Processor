@@ -355,11 +355,15 @@ void Data_Memory(BIT MemWrite, BIT MemRead,
   
 }
 
-void Extend_Sign16(BIT* Input, BIT* Output)
-{
-  // TODO: Implement 16-bit to 32-bit sign extender
-  // Copy Input to Output, then extend 16th Input bit to 17-32 bits in Output
-  
+void Extend_Sign16(BIT* Input, BIT* Output) {
+    // TODO: Implement 16-bit to 32-bit sign extender
+    // Copy Input to Output, then extend 16th Input bit to 17-32 bits in Output
+    for (int i = 0; i < 16; ++i) {
+        Output[i] = Input[i];
+    }
+    for (int i = 16; i < 32; ++i) {
+        Output[i] = Input[15];
+    }
 }
 
 void updateState()
