@@ -46,6 +46,9 @@ BIT nor_gate (BIT A, BIT B);
 BIT nand_gate(BIT A, BIT B);
 
 void decoder2(BIT I0, BIT I1, BIT* O0, BIT* O1, BIT* O2, BIT* O3);
+void decoder3(BIT* I, BIT EN, BIT* O);
+void decoder5(BIT* I, BIT* O);
+
 BIT  multiplexor2(BIT S, BIT I0, BIT I1);
 void multiplexor2_32(BIT S, BIT* I0, BIT* I1, BIT* Output);
 BIT  multiplexor4(BIT S0, BIT S1, BIT I0, BIT I1, BIT I2, BIT I3);
@@ -130,6 +133,41 @@ void decoder2(BIT I0, BIT I1, BIT* O0, BIT* O1, BIT* O2, BIT* O3) {
     *O1 = and_gate(not_gate(I1), I0);
     *O2 = and_gate(I1, not_gate(I0));
     *O3 = and_gate(I1, I0);
+}
+
+void decoder3(BIT* I, BIT EN, BIT* O)
+{
+    // TODO: implement 3-to-8 decoder using gates
+    O[0] = and_gate3(not_gate(I[2]), not_gate(I[1]), not_gate(I[0]));
+    O[1] = and_gate3(not_gate(I[2]), not_gate(I[1]), I[0]);
+    O[2] = and_gate3(not_gate(I[2]), I[1], not_gate(I[0]));
+    O[3] = and_gate3(not_gate(I[2]), I[1], I[0]);
+    O[4] = and_gate3(I[2], not_gate(I[1]), not_gate(I[0]));
+    O[5] = and_gate3(I[2], not_gate(I[1]), I[0]);
+    O[6] = and_gate3(I[2], I[1], not_gate(I[0]));
+    O[7] = and_gate3(I[2], I[1], I[0]);
+
+    O[0] = and_gate(EN, O[0]);
+    O[1] = and_gate(EN, O[1]);
+    O[2] = and_gate(EN, O[2]);
+    O[3] = and_gate(EN, O[3]);
+    O[4] = and_gate(EN, O[4]);
+    O[5] = and_gate(EN, O[5]);
+    O[6] = and_gate(EN, O[6]);
+    O[7] = and_gate(EN, O[7]);
+
+    return;
+}
+
+void decoder5(BIT* I, BIT* O)
+{
+    // TODO: implement 5-to-32 decoder using 2-to-4 and 3-to-8 decoders
+    BIT EN[4] = {FALSE};
+    decoder2(I[3], I[4], &EN[0], &EN[1], &EN[2], &EN[3]);
+    decoder3(I, EN[3], &O[24]);
+    decoder3(I, EN[2], &O[16]);
+    decoder3(I, EN[1], &O[8]);
+    decoder3(I, EN[0], &O[0]);
 }
 
 BIT  multiplexor2(BIT S, BIT I0, BIT I1) {
