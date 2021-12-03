@@ -363,22 +363,21 @@ void Control(const BIT* OpCode, const BIT* funct,
 
     RegDst[1]   = jal;
     RegDst[0]   = R_type;
-    ALUSrc      = or_gate3(lw, sw, addi);
+    *ALUSrc      = or_gate3(lw, sw, addi);
     MemToReg[1] = jal;
     MemToReg[0] = lw;
-    RegWrite    = or_gate(or_gate(
-                                and_gate(R_type, not_gate(jr)) ,
-                                jal
-                                    )  ,
+    *RegWrite   = or_gate(or_gate(
+                            and_gate(R_type, not_gate(jr)) ,
+                            jal )  ,
                           or_gate(lw, addi)
                           );
-    MemRead     = lw;
-    MemWrite    = sw;
-    Branch      = beq;
-    Jump        = or_gate(j, jal);
-    JMPReg      = and_gate(R_type, jr);
-    ALUOp[1]    = R_type;
-    ALUOp[0]    = beq;
+    *MemRead  = lw;
+    *MemWrite = sw;
+    *Branch   = beq;
+    *Jump     = or_gate(j, jal);
+    *JMPReg   = and_gate(R_type, jr);
+    ALUOp[1]  = R_type;
+    ALUOp[0]  = beq;
 }
 
 void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
