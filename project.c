@@ -366,7 +366,7 @@ void Control(const BIT* OpCode, const BIT* funct,
     ALUSrc      = or_gate3(lw, sw, addi);
     MemToReg[1] = jal;
     MemToReg[0] = lw;
-    RegWrite    = or_gate(or_gate(
+    *RegWrite    = or_gate(or_gate(
                                 and_gate(R_type, not_gate(jr)) ,
                                 jal
                                     )  ,
