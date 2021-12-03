@@ -35,6 +35,7 @@ BIT THIRTY_TWO[32] = {FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
 /******************************************************************************/
 /* Function prototypes */
 /******************************************************************************/
+// gate
 BIT not_gate (BIT A);
 BIT or_gate  (BIT A, BIT B);
 BIT or_gate3 (BIT A, BIT B, BIT C);
@@ -44,15 +45,21 @@ BIT and_gate6(BIT A, BIT B, BIT C, BIT D, BIT E, BIT F);
 BIT xor_gate (BIT A, BIT B);
 BIT nor_gate (BIT A, BIT B);
 BIT nand_gate(BIT A, BIT B);
-
+// decoder
 void decoder2(BIT I0, BIT I1, BIT* O0, BIT* O1, BIT* O2, BIT* O3);
 void decoder3(BIT* I, BIT EN, BIT* O);
 void decoder5(BIT* I, BIT* O);
-
+// multiplexor
 BIT  multiplexor2(BIT S, BIT I0, BIT I1);
 void multiplexor2_32(BIT S, BIT* I0, BIT* I1, BIT* Output);
 BIT  multiplexor4(BIT S0, BIT S1, BIT I0, BIT I1, BIT I2, BIT I3);
-
+// ALU
+void adder1(BIT A, BIT B, BIT CarryIn, BIT* CarryOut, BIT* Sum);
+void ALU1(BIT A, BIT B, BIT Binvert, BIT CarryIn, BIT Less,
+          BIT Op0, BIT Op1, BIT* Result, BIT* CarryOut, BIT* Set);
+void ALU32(BIT* A, BIT* B, BIT Binvert, BIT CarryIn,
+           BIT Op0, BIT Op1, BIT* Result, BIT* CarryOut);
+// bits operation
 void copy_bits(const BIT* A, BIT* B);
 void print_binary(const BIT* A);
 void convert_to_binary(int a, BIT* A, int length);
@@ -190,6 +197,58 @@ BIT  multiplexor4(BIT S0, BIT S1, BIT I0, BIT I1, BIT I2, BIT I3) {
     BIT z1 = or_gate(y2, y3);
 
     return or_gate(z0, z1);
+}
+
+void adder1(BIT A, BIT B, BIT CarryIn, BIT* CarryOut, BIT* Sum) {
+    // TODO: implement a 1-bit adder
+    // Note: you can probably copy+paste this from your (or my) Lab 5 solution
+
+    BIT x0 = xor_gate(A, B);
+    *Sum = xor_gate(CarryIn, x0);
+
+    BIT y0 = and_gate(x0, CarryIn);
+    BIT y1 = and_gate(A, B);
+    *CarryOut = or_gate(y0, y1);
+}
+
+void ALU1(BIT A, BIT B, BIT Binvert, BIT CarryIn, BIT Less,
+          BIT Op0, BIT Op1, BIT* Result, BIT* CarryOut, BIT* Set) {
+    // TODO: implement a 1-bit ALU
+    // Note: this will need modifications from Lab 5 to account for 'slt'
+    // See slide "MSB ALU" in csci2500-f21-ch03a-slides.pdf
+
+    BIT x0 = multiplexor2(Binvert, B, not_gate(B));
+
+    BIT y0 = and_gate(A, x0);
+    BIT y1 = or_gate(A, x0);
+
+    BIT y2 = FALSE;
+    adder1(A, x0, CarryIn, CarryOut, &y2);
+    *Set = y2;
+
+    BIT y3 = Less;
+
+    *Result = multiplexor4(Op0, Op1, y0, y1, y2, y3);
+}
+
+void ALU32(BIT* A, BIT* B, BIT Binvert, BIT CarryIn,
+           BIT Op0, BIT Op1, BIT* Result, BIT* CarryOut) {
+    // TODO: implement a 32-bit ALU
+    // You'll need to essentially implement a 32-bit ripple adder here
+    // See slide "New 32-bit ALU" in csci2500-f21-ch03a-slides.pdf
+
+    BIT Less = FALSE;
+    BIT Set = FALSE;
+    ALU1(A[0], B[0], Binvert, CarryIn, Less,
+         Op0, Op1, &Result[0], CarryOut, &Set);
+    for (int i = 1; i < 32; ++i) {
+        ALU1(A[i], B[i], Binvert, *CarryOut, Less,
+             Op0, Op1, &Result[i], CarryOut, &Set);
+    }
+
+    Less = Set;
+    ALU1(A[0], B[0], Binvert, CarryIn, Less,
+         Op0, Op1, &Result[0], CarryOut, &Set);
 }
 
 
