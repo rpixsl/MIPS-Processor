@@ -69,6 +69,7 @@ void print_binary(const BIT* A);
 void convert_to_binary(int a, BIT* A, int length);
 void convert_to_binary_char(int a, char* A, int length);
 int  binary_to_integer(const BIT* A);
+int  binary_to_integer5(const BIT* A);
 
 // get instructions
 int  get_instructions(BIT Instructions[][32]);
@@ -307,6 +308,18 @@ int  binary_to_integer(const BIT* A) {
     return (int) a;
 }
 
+int  binary_to_integer5(const BIT* A) {
+    unsigned a = 0;
+    unsigned mult = 1;
+
+    for (int i = 0; i < 5; ++i) {
+        a += A[i] * mult;
+        mult *= 2;
+    }
+
+    return (int) a;
+}
+
 
 /******************************************************************************/
 /* Parsing functions */
@@ -468,6 +481,10 @@ void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
     // Input: two 5-bit register addresses
     // Output: the values of the specified registers in ReadData1 and ReadData2
     // Note: Implementation will be very similar to instruction memory circuit
+    int register1_index = binary_to_integer5(ReadRegister1);
+    int register2_index = binary_to_integer5(ReadRegister2);
+    copy_bits(MEM_Register[register1_index], ReadData1);
+    copy_bits(MEM_Register[register2_index], ReadData2);
 }
 
 void Write_Register(BIT RegWrite, BIT* WriteRegister, BIT* WriteData) {
@@ -475,6 +492,10 @@ void Write_Register(BIT RegWrite, BIT* WriteRegister, BIT* WriteData) {
     // Input: one 5-bit register address, data to write, and control bit
     // Output: None, but will modify register file
     // Note: Implementation will again be similar to those above
+    int write_register_index = binary_to_integer(WriteRegister);
+    BIT write_data[32];
+    multiplexor2_32(RegWrite, MEM_Register[write_register_index], WriteData, write_data);
+    copy_bits(write_data, MEM_Register[write_register_index]);
 }
 
 void ALU_Control(const BIT* funct) {
