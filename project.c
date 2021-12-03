@@ -187,12 +187,25 @@ void print_binary(BIT* A)
 
 void convert_to_binary(int a, BIT* A, int length)
 {
-  /* Use your implementation from Lab 6 */
+    /* Use your implementation from Lab 6 */
+    convert_to_binary_char(a, A, 32);
 }
 
 void convert_to_binary_char(int a, char* A, int length)
 {
-  /* Use your implementation from Lab 6 */
+    /* Use your implementation from Lab 6 */
+    if (a >= 0) {
+        for (int i = 0; i < length; ++i) {
+            A[i] = (a % 2 == 1 ? '1' : '0');
+            a /= 2;
+        }
+    } else {
+        a += 1;
+        for (int i = 0; i < length; ++i) {
+            A[i] = (a % 2 == 0 ? '1' : '0');
+            a /= 2;
+        }
+    }
 }
 
 int binary_to_integer(BIT* A)
@@ -328,12 +341,15 @@ void Write_Register(BIT RegWrite, BIT* WriteRegister, BIT* WriteData)
 
 void ALU_Control(BIT* ALUOp, BIT* funct, BIT* ALUControl)
 {
-  // TODO: Implement ALU Control circuit
-  // Input: 2-bit ALUOp from main control circuit, 6-bit funct field from the
-  //        binary instruction
-  // Output:4-bit ALUControl for input into the ALU
-  // Note: Can use SOP or similar approaches to determine bits
-  
+    // TODO: Implement ALU Control circuit
+    // Input: 2-bit ALUOp from main control circuit, 6-bit funct field from the
+    //        binary instruction
+    // Output:4-bit ALUControl for input into the ALU
+    // Note: Can use SOP or similar approaches to determine bits
+    ALUControl[0] = and_gate( or_gate(funct[0], funct[3]) , ALUOp[1]  );
+    ALUControl[1] = or_gate ( not_gate(ALUOp[1]) , not_gate(funct[2]) );
+    ALUControl[2] = or_gate ( and_gate(ALUOp[1], funct[1]) , ALUOp[0] );
+    ALUControl[3] = and_gate( ALUOp[0] , not_gate(ALUOp[0]) );
 }
 
 void ALU(BIT* ALUControl, BIT* Input1, BIT* Input2, BIT* Zero, BIT* Result)
@@ -355,7 +371,8 @@ void Data_Memory(BIT MemWrite, BIT MemRead,
   
 }
 
-void Extend_Sign16(BIT* Input, BIT* Output) {
+void Extend_Sign16(BIT* Input, BIT* Output)
+{
     // TODO: Implement 16-bit to 32-bit sign extender
     // Copy Input to Output, then extend 16th Input bit to 17-32 bits in Output
     for (int i = 0; i < 16; ++i) {
