@@ -79,7 +79,7 @@ void Instruction_Memory(BIT* ReadAddress, BIT* Instruction);
 void Control(const BIT* OpCode, const BIT* funct );
 void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
                    BIT* ReadData1, BIT* ReadData2);
-void Write_Register(BIT RegWrite, BIT* WriteRegister, BIT* WriteData);
+void Write_Register(BIT* WriteRegister, BIT* WriteData);
 void ALU_Control(const BIT* funct);
 void ALU(BIT* ALUControl, BIT* Input1, BIT* Input2, BIT* Zero, BIT* Result);
 void Data_Memory(BIT MemWrite, BIT MemRead,
@@ -487,7 +487,7 @@ void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
     copy_bits(MEM_Register[register2_index], ReadData2);
 }
 
-void Write_Register(BIT RegWrite, BIT* WriteRegister, BIT* WriteData) {
+void Write_Register(BIT* WriteRegister, BIT* WriteData) {
     // TODO: Implement register write functionality
     // Input: one 5-bit register address, data to write, and control bit
     // Output: None, but will modify register file
