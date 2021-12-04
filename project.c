@@ -322,14 +322,14 @@ void convert_to_binary(int a, BIT* A, int length) {
 void convert_to_binary_char(int a, char* A, int length) {
     /* Use your implementation from Lab 6 */
     if (a >= 0) {
-        for (int i = 0; i < length; ++i) {
+        for (int i = length-1; i >= 0; i--) {
             A[i] = (a % 2 == 1 ? '1' : '0');
             a /= 2;
         }
     }
     else {
         a += 1;
-        for (int i = 0; i < length; ++i) {
+        for (int i = length-1; i >= 0; i--) {
             A[i] = (a % 2 == 0 ? '1' : '0');
             a /= 2;
         }
