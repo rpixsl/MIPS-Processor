@@ -173,6 +173,11 @@ int get_instructions(BIT Instructions[][32]) {
             for (int i = 0; i < 6; ++i) {
                 Instructions[instruction_count][i+26] = opcode[5-i];
             }
+
+            // test
+            for (int i = 31; i >= 0; i--) {
+                printf("%c", Instructions[instruction_count][i]);
+            }
         }
         else if ((strcmp(op, "lw" ) == 0) | (strcmp(op, "sw"  ) == 0) |
                  (strcmp(op, "beq") == 0) | (strcmp(op, "addi") == 0) ) {
@@ -194,6 +199,11 @@ int get_instructions(BIT Instructions[][32]) {
             for (int i = 0; i < 6; ++i) {
                 Instructions[instruction_count][i+26] = opcode[5-i];
             }
+
+            // test
+            for (int i = 31; i >= 0; i--) {
+                printf("%c", Instructions[instruction_count][i]);
+            }
         }
         else if ((strcmp(op, "j") == 0) | (strcmp(op, "jal") == 0)) {
 
@@ -205,6 +215,11 @@ int get_instructions(BIT Instructions[][32]) {
             }
             for (int i = 0; i < 6; ++i) {
                 Instructions[instruction_count][i+26] = opcode[5-i];
+            }
+
+            // test
+            for (int i = 31; i >= 0; i--) {
+                printf("%c", Instructions[instruction_count][i]);
             }
         }
         else if ((strcmp(op, "jr") == 0)) {
@@ -230,6 +245,11 @@ int get_instructions(BIT Instructions[][32]) {
             }
             for (int i = 0; i < 6; ++i) {
                 Instructions[instruction_count][i+26] = opcode[5-i];
+            }
+
+            // test
+            for (int i = 31; i >= 0; i--) {
+                printf("%c", Instructions[instruction_count][i]);
             }
         }
         else {
