@@ -1,60 +1,15 @@
+//
+// Created by Tianrui Qi on 12/4/21.
+// Test the component function of project.c: 'get_instructions'
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// define BIT type as a char (i.e., one byte)
 typedef char BIT;
 #define TRUE 1
 #define FALSE 0
-#define UNDEF -1
-
-
-// bits operation
-void copy_bits(const BIT* A, BIT* B);
-void copy_m_to_n_bits(const BIT* A, BIT* B, int m, int n);
-void print_binary(const BIT* A);
-void convert_to_binary(int a, BIT* A, int length);
-void convert_to_binary_char(int a, char* A, int length);
-int  binary_to_integer(const BIT* A);
-int  binary_to_integer5(const BIT* A);
-
-// parsing functions
-void convert_opcode(char reg[], char reg_binary[]);
-void convert_reg(char reg[], char reg_binary[]);
-void convert_func(char reg[], char reg_binary[]);
-int  get_instructions(BIT Instructions[][32]);
-
-// Program state
-void print_instruction();
-void print_state();
-
-
-
-/******************************************************************************/
-/* Helper functions */
-/******************************************************************************/
-void copy_bits(const BIT* A, BIT* B) {
-    for (int i = 0; i < 32; ++i) {
-        B[i] = A[i];
-    }
-}
-
-void copy_m_to_n_bits(const BIT* A, BIT* B, int m, int n) {
-    for (int i = m; i <= n; ++i) {
-        B[i] = A[i];
-    }
-}
-
-void print_binary(const BIT* A) {
-    for (int i = 31; i >= 0; --i) {
-        printf("%d", A[i]);
-    }
-}
-
-void convert_to_binary(int a, BIT* A, int length) {
-    /* Use your implementation from Lab 6 */
-    convert_to_binary_char(a, A, 32);
-}
 
 void convert_to_binary_char(int a, char* A, int length) {
     /* Use your implementation from Lab 6 */
@@ -72,31 +27,6 @@ void convert_to_binary_char(int a, char* A, int length) {
         }
     }
 }
-
-int  binary_to_integer(const BIT* A) {
-    unsigned a = 0;
-    unsigned mult = 1;
-
-    for (int i = 0; i < 32; ++i) {
-        a += A[i] * mult;
-        mult *= 2;
-    }
-
-    return (int) a;
-}
-
-int  binary_to_integer5(const BIT* A) {
-    unsigned a = 0;
-    unsigned mult = 1;
-
-    for (int i = 0; i < 5; ++i) {
-        a += A[i] * mult;
-        mult *= 2;
-    }
-
-    return (int) a;
-}
-
 
 /******************************************************************************/
 /* Parsing functions */
@@ -325,55 +255,7 @@ int get_instructions(BIT Instructions[][32]) {
     return instruction_count;
 }
 
-
-/******************************************************************************/
-/* Program state - memory spaces, PC, and control */
-/******************************************************************************/
-
-BIT PC[32]                  = {FALSE};
 BIT MEM_Instruction[32][32] = {FALSE};
-BIT MEM_Data[32][32]        = {FALSE};
-BIT MEM_Register[32][32]    = {FALSE};
-
-BIT RegDst[2]     = {FALSE};
-BIT ALUSrc        =  FALSE ;
-BIT MemToReg[2]   = {FALSE};
-BIT RegWrite      =  FALSE ;
-BIT MemRead       =  FALSE ;
-BIT MemWrite      =  FALSE ;
-BIT Branch        =  FALSE ;
-BIT Jump          =  FALSE ; // for j, jal instruction
-BIT JMPReg        =  FALSE ; // for jr instruction
-BIT ALUOp[2]      = {FALSE};
-
-BIT Zero          =  FALSE;
-BIT ALUControl[4] = {FALSE};
-
-void print_instruction() {
-    unsigned pc = binary_to_integer(PC);
-    printf("PC: %d\n", pc);
-    printf("Instruction: ");
-    print_binary(MEM_Instruction[pc]);
-    printf("\n");
-}
-
-void print_state() {
-    printf("Data: ");
-    for (int i = 0; i < 32; ++i) {
-        printf("%d ", binary_to_integer(MEM_Data[i]));
-    }
-    printf("\n");
-
-    printf("Register: ");
-    for (int i = 0; i < 32; ++i) {
-        printf("%d ", binary_to_integer(MEM_Register[i]));
-    }
-    printf("\n");
-}
-
-/******************************************************************************/
-/* Main */
-/******************************************************************************/
 
 int main() {
     setbuf(stdout, NULL);

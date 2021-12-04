@@ -1,10 +1,9 @@
 //
 // Created by Tianrui Qi on 12/3/21.
+// Test the component function of project.c: 'Control'
 //
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 typedef char BIT;
 #define TRUE 1

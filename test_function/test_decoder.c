@@ -1,24 +1,18 @@
 //
 // Created by Shijie on 2021/12/3.
+// Test the help function of project.c: decoder
 //
 
-/******************************************************************************/
-/* Usual suspects to include  */
-/******************************************************************************/
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-
-// define BIT type as a char (i.e., one byte)
 typedef char BIT;
 #define TRUE 1
 #define FALSE 0
-#define UNDEF -1
 
 /******************************************************************************/
-/* Functions provided for your convenience */
+// help function for testing
 /******************************************************************************/
+
 BIT  not_gate(BIT A) {
     if (A)
         return FALSE;
@@ -47,6 +41,10 @@ BIT  and_gate(BIT A, BIT B) {
 BIT  and_gate3(BIT A, BIT B, BIT C) {
     return and_gate(A, and_gate(B, C));
 }
+
+/******************************************************************************/
+// function need test
+/******************************************************************************/
 
 void decoder2(BIT I0, BIT I1, BIT* O0, BIT* O1, BIT* O2, BIT* O3) {
     // Note: The input -> output mapping is slightly modified from before
@@ -88,12 +86,11 @@ void decoder5(BIT* I, BIT* O) {
 }
 
 
-int main()
-{
+int main() {
     // Unit test for 5-to-32 decoder
     printf("\n===== Unit test for 5-to-32 decoder =====\n");
     printf("decoder( I4, I3, I2, I1, I0 ) | ( O31, O30, ..., O1, O0 )\n");
-    printf("------------------------------|--------------------------------------------------------------------------------------------------\n" );
+    printf("------------------------------|--------------------------------------------------------------------------------------------------\n");
     BIT I[5] = {0};
     BIT O[32] = {0};
     for (I[4] = 0; I[4] < 2; ++I[4])
@@ -102,8 +99,8 @@ int main()
                 for (I[1] = 0; I[1] < 2; ++I[1])
                     for (I[0] = 0; I[0] < 2; ++I[0]) {
                         decoder5(I, O);
-                        printf( "decoder( %2d, %2d, %2d, %2d, %2d, ) | ( ",
-                                I[4], I[3], I[2], I[1], I[0]);
+                        printf("decoder( %2d, %2d, %2d, %2d, %2d, ) | ( ",
+                               I[4], I[3], I[2], I[1], I[0]);
                         printf("%2d", O[31]);
                         for (int i = 30; i >= 0; --i)
                             printf(", %2d", O[i]);
