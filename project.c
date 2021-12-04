@@ -435,8 +435,7 @@ void convert_func(char reg[], char reg_binary[]) {
 }
 
 int get_instructions(BIT Instructions[][32]) {
-    char line[128] = {0};
-    int  instruction_count = 0;
+    int  instruction_count = 0; // counter: number of instruction
 
     // mips instruction
     BIT op  [128] = {FALSE};
@@ -444,15 +443,16 @@ int get_instructions(BIT Instructions[][32]) {
     BIT reg2[128] = {FALSE};
     BIT reg3[128] = {FALSE};
     // binary instruction
-    BIT opcode[6] = {FALSE};
-    BIT rs[6]     = {FALSE};
-    BIT rt[6]     = {FALSE};
-    BIT rd[6]     = {FALSE};
-    BIT immediate[16] = {FALSE};
-    BIT address[26]   = {FALSE};
-    BIT func[7]       = {FALSE};
+    BIT opcode[6] = {FALSE};     // opcode   : [31-26]
+    BIT rs[6]   = {FALSE};       // rs       : [25-21]
+    BIT rt[6]   = {FALSE};       // rt       : [20-16]
+    BIT rd[6]   = {FALSE};       // rd       : [15-11]
+    BIT func[7] = {FALSE};       // func     : [5-0]
+    BIT immediate[16] = {FALSE}; // immediate: [15-0]
+    BIT address  [26] = {FALSE}; // address  : [25-0]
 
-    while (fgets(line, 256, stdin) != NULL) {
+    char line[128] = {0};
+    while (fgets(line, 128, stdin) != NULL) {
         // TODO: perform conversion of instructions to binary
         // Input: coming from stdin via: ./a.out < input.txt
         // Output: Convert instructions to binary in the instruction memory
@@ -471,87 +471,91 @@ int get_instructions(BIT Instructions[][32]) {
         if ((strcmp(op, "add") == 0) | (strcmp(op, "sub") == 0) |
             (strcmp(op, "or" ) == 0) | (strcmp(op, "and") == 0) |
             (strcmp(op, "slt") == 0)) {
-
+            // convert mips code into binary instruction
             convert_opcode(op, opcode);
             convert_reg(reg2, rs);
             convert_reg(reg3, rt);
             convert_reg(reg1, rd);
             convert_func(op, func);
 
-            for (int i = 0; i < 6; ++i) {
+            // store 32-bit binary instruction in the 'Instructions'
+            for (int i = 0; i < 6; ++i) { // func: [5-0]
                 Instructions[instruction_count][i] = func[5-i];
             }
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 5; ++i) { // shamt: [10-6]
                 Instructions[instruction_count][i+6] = '0';
             }
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 5; ++i) { // rd: [15-11]
                 Instructions[instruction_count][i+11] = rd[4-i];
             }
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 5; ++i) { // rt: [20-16]
                 Instructions[instruction_count][i+16] = rt[4-i];
             }
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 5; ++i) { // rs: [25-21]
                 Instructions[instruction_count][i+21] = rs[4-i];
             }
-            for (int i = 0; i < 6; ++i) {
+            for (int i = 0; i < 6; ++i) { // opcode: [31-26]
                 Instructions[instruction_count][i+26] = opcode[5-i];
             }
         }
         else if ((strcmp(op, "lw" ) == 0) | (strcmp(op, "sw"  ) == 0) |
                  (strcmp(op, "beq") == 0) | (strcmp(op, "addi") == 0) ) {
-
+            // convert mips code into binary instruction
             convert_opcode(op, opcode);
             convert_reg(reg2, rs);
             convert_reg(reg1, rt);
             convert_to_binary_char(atoi(reg3), immediate, 16);
 
-            for (int i = 0; i < 16; ++i) {
+            // store 32-bit binary instruction in the 'Instructions'
+            for (int i = 0; i < 16; ++i) { // immediate: [15-0]
                 Instructions[instruction_count][i] = immediate[15-i];
             }
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 5; ++i) { // rt: [20-16]
                 Instructions[instruction_count][i+16] = rt[4-i];
             }
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 5; ++i) { // rs: [25-21]
                 Instructions[instruction_count][i+21] = rs[4-i];
             }
-            for (int i = 0; i < 6; ++i) {
+            for (int i = 0; i < 6; ++i) { // opcode: [31-26]
                 Instructions[instruction_count][i+26] = opcode[5-i];
             }
         }
         else if ((strcmp(op, "j") == 0) | (strcmp(op, "jal") == 0)) {
-
+            // convert mips code into binary instruction
             convert_opcode(op, opcode);
             convert_to_binary_char(atoi(reg1), address, 26);
 
-            for (int i = 0; i < 26; ++i) {
+            // store 32-bit binary instruction in the 'Instructions'
+            for (int i = 0; i < 26; ++i) { // address: [25-0]
                 Instructions[instruction_count][i] = address[25-i];
             }
-            for (int i = 0; i < 6; ++i) {
+            for (int i = 0; i < 6; ++i) { // opcode: [31-26]
                 Instructions[instruction_count][i+26] = opcode[5-i];
             }
         }
         else if ((strcmp(op, "jr") == 0)) {
-
+            // convert mips code into binary instruction
             convert_opcode(op, opcode);
             convert_reg(reg1, rs);
             convert_func(op, func);
 
-            for (int i = 0; i < 6; ++i) {
+            // store 32-bit binary instruction in the 'Instructions'
+            for (int i = 0; i < 6; ++i) { // func: [5-0]
                 Instructions[instruction_count][i] = func[5-i];
             }
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 5; ++i) { // shamt: [10-6]
                 Instructions[instruction_count][i+6] = '0';
             }
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 5; ++i) { // rd: [15-11]
                 Instructions[instruction_count][i+11] = '0';
             }
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 5; ++i) { // rt: [20-16]
                 Instructions[instruction_count][i+16] = '0';
             }
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 5; ++i) { // rs: [25-21]
                 Instructions[instruction_count][i+21] = rs[4-i];
             }
-            for (int i = 0; i < 6; ++i) {
+            for (int i = 0; i < 6; ++i) { // opcode: [31-26]
                 Instructions[instruction_count][i+26] = opcode[5-i];
             }
         }
@@ -735,6 +739,8 @@ void ALU(BIT* Input1, BIT* Input2, BIT* Result) {
     // Input: 4-bit ALUControl, two 32-bit inputs
     // Output: 32-bit result, and zero flag big
     // Note: Can re-use prior implementations (but need new circuitry for zero)
+
+    // A. determine which result we should output by 'ALU Control'
     BIT is_and = and_gate4(not_gate(ALUControl[3]),
                            not_gate(ALUControl[2]),
                            not_gate(ALUControl[1]),
@@ -760,6 +766,7 @@ void ALU(BIT* Input1, BIT* Input2, BIT* Result) {
                            not_gate(ALUControl[1]),
                            not_gate(ALUControl[0]));
 
+    // B. determine six kinds result
     BIT and_result[32];
     and32(Input1, Input2, and_result);
     BIT or_result[32];
@@ -773,6 +780,7 @@ void ALU(BIT* Input1, BIT* Input2, BIT* Result) {
     BIT nor_result[32];
     nor32(Input1, Input2, nor_result);
 
+    // C. output the result by the determination above
     for (int i = 0; i < 32; ++i) {
         Result[i] = or_gate6(and_gate(is_and, and_result[i]),
                              and_gate(is_or, or_result[i]),
@@ -782,6 +790,7 @@ void ALU(BIT* Input1, BIT* Input2, BIT* Result) {
                              and_gate(is_nor, nor_result[i]));
     }
 
+    // D. output the 'Zero' 1-bit control signal
     for (int i = 0; i < 32; ++i) {
         Zero = or_gate(Zero, sub_result[i]);
     }
