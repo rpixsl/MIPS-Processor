@@ -372,8 +372,8 @@ int  binary_to_integer5(const BIT* A) {
 
 void convert_opcode(char reg[], char reg_binary[]) {
     if ((strcmp(reg, "add") == 0) | (strcmp(reg, "sub") == 0) |
-        (strcmp(reg, "and") == 0) | (strcmp(reg, "or") == 0) |
-        (strcmp(reg, "slt") == 0) | (strcmp(reg, "jr") == 0)) {
+        (strcmp(reg, "and") == 0) | (strcmp(reg, "or" ) == 0) |
+        (strcmp(reg, "slt") == 0) | (strcmp(reg, "jr" ) == 0)) {
         strcpy(reg_binary, "000000");
     } else if (strcmp(reg, "j") == 0) {
         strcpy(reg_binary, "000010");
@@ -434,16 +434,31 @@ void convert_func(char reg[], char reg_binary[]) {
     }
 }
 
-int  get_instructions(BIT Instructions[][32]) {
-    char line[256] = {0};
-    int instruction_count = 0;
+int get_instructions(BIT Instructions[][32]) {
+    char line[128] = {0};
+    int  instruction_count = 0;
+
+    // mips instruction
+    BIT op  [128] = {FALSE};
+    BIT reg1[128] = {FALSE};
+    BIT reg2[128] = {FALSE};
+    BIT reg3[128] = {FALSE};
+    // binary instruction
+    BIT opcode[6] = {FALSE};
+    BIT rs[5]     = {FALSE};
+    BIT rt[5]     = {FALSE};
+    BIT rd[5]     = {FALSE};
+    BIT immediate[16] = {FALSE};
+    BIT address[26]   = {FALSE};
+    BIT func[6]       = {FALSE};
+
     while (fgets(line, 256, stdin) != NULL) {
         // TODO: perform conversion of instructions to binary
         // Input: coming from stdin via: ./a.out < input.txt
         // Output: Convert instructions to binary in the instruction memory
         // Return: Total number of instructions
         // Note: you are free to use if-else and external libraries here
-        // Note: you don't need to implement circuits for saving to inst. mem.
+        // Note: you don't need to implement circuits for saving to op. mem.
         // My approach:
         // - Use sscanf on line to get strings for instruction and registers
         // - Use instructions to determine op code, funct, and shamt fields
@@ -451,6 +466,100 @@ int  get_instructions(BIT Instructions[][32]) {
         // - Use registers to get rt, rd, rs fields
         // Note: I parse everything as strings, then convert to BIT array at end
 
+        sscanf(line, "%s %s %s %s", op, reg1, reg2, reg3);
+
+        if ((strcmp(op, "add") == 0) | (strcmp(op, "sub") == 0) |
+            (strcmp(op, "or" ) == 0) | (strcmp(op, "and") == 0) |
+            (strcmp(op, "slt") == 0)) {
+
+            convert_opcode(op, opcode);
+            convert_reg(reg2, rs);
+            convert_reg(reg3, rt);
+            convert_reg(reg1, rd);
+            convert_func(op, func);
+
+            for (int i = 0; i < 6; ++i) {
+                Instructions[instruction_count][i] = func[5-i];
+            }
+            for (int i = 0; i < 5; ++i) {
+                Instructions[instruction_count][i+6] = '0';
+            }
+            for (int i = 0; i < 5; ++i) {
+                Instructions[instruction_count][i+11] = rd[4-i];
+            }
+            for (int i = 0; i < 5; ++i) {
+                Instructions[instruction_count][i+16] = rt[4-i];
+            }
+            for (int i = 0; i < 5; ++i) {
+                Instructions[instruction_count][i+21] = rs[4-i];
+            }
+            for (int i = 0; i < 6; ++i) {
+                Instructions[instruction_count][i+26] = opcode[5-i];
+            }
+        }
+        else if ((strcmp(op, "lw" ) == 0) | (strcmp(op, "sw"  ) == 0) |
+                 (strcmp(op, "beq") == 0) | (strcmp(op, "addi") == 0) ) {
+
+            convert_opcode(op, opcode);
+            convert_reg(reg2, rs);
+            convert_reg(reg1, rt);
+            convert_to_binary_char(atoi(reg3), immediate, 16);
+
+            for (int i = 0; i < 16; ++i) {
+                Instructions[instruction_count][i] = immediate[15-i];
+            }
+            for (int i = 0; i < 5; ++i) {
+                Instructions[instruction_count][i+16] = rt[4-i];
+            }
+            for (int i = 0; i < 5; ++i) {
+                Instructions[instruction_count][i+21] = rs[4-i];
+            }
+            for (int i = 0; i < 6; ++i) {
+                Instructions[instruction_count][i+26] = opcode[5-i];
+            }
+        }
+        else if ((strcmp(op, "j") == 0) | (strcmp(op, "jal") == 0)) {
+
+            convert_opcode(op, opcode);
+            convert_to_binary_char(atoi(reg1), address, 26);
+
+            for (int i = 0; i < 26; ++i) {
+                Instructions[instruction_count][i] = address[25-i];
+            }
+            for (int i = 0; i < 6; ++i) {
+                Instructions[instruction_count][i+26] = opcode[5-i];
+            }
+        }
+        else if ((strcmp(op, "jr") == 0)) {
+
+            convert_opcode(op, opcode);
+            convert_reg(reg1, rs);
+            convert_func(op, func);
+
+            for (int i = 0; i < 6; ++i) {
+                Instructions[instruction_count][i] = func[5-i];
+            }
+            for (int i = 0; i < 5; ++i) {
+                Instructions[instruction_count][i+6] = '0';
+            }
+            for (int i = 0; i < 5; ++i) {
+                Instructions[instruction_count][i+11] = '0';
+            }
+            for (int i = 0; i < 5; ++i) {
+                Instructions[instruction_count][i+16] = '0';
+            }
+            for (int i = 0; i < 5; ++i) {
+                Instructions[instruction_count][i+21] = rs[4-i];
+            }
+            for (int i = 0; i < 6; ++i) {
+                Instructions[instruction_count][i+26] = opcode[5-i];
+            }
+        }
+        else {
+            printf("Error: Unknown operation.\n");
+        }
+
+        instruction_count++;
     }
 
     return instruction_count;
