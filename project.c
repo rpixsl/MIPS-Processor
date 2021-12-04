@@ -57,6 +57,8 @@ void decoder5(BIT* I, BIT* O);
 BIT  multiplexor2(BIT S, BIT I0, BIT I1);
 void multiplexor2_32(BIT S, BIT* I0, BIT* I1, BIT* Output);
 BIT  multiplexor4(BIT S0, BIT S1, BIT I0, BIT I1, BIT I2, BIT I3);
+void multiplexor4_32(BIT S0, BIT S1,
+                     BIT* I0, BIT* I1, BIT* I2, BIT* I3, BIT* Output);
 
 // ALU
 void adder1(BIT A, BIT B, BIT CarryIn, BIT* CarryOut, BIT* Sum);
@@ -67,6 +69,7 @@ void nor32(BIT* A, BIT* B, BIT* Result);
 
 // bits operation
 void copy_bits(const BIT* A, BIT* B);
+void copy_m_to_n_bits(const BIT* A, BIT* B, int m, int n);
 void print_binary(const BIT* A);
 void convert_to_binary(int a, BIT* A, int length);
 void convert_to_binary_char(int a, char* A, int length);
@@ -87,6 +90,7 @@ void ALU(BIT* Input1, BIT* Input2, BIT* Result);
 void Data_Memory(BIT MemWrite, BIT MemRead,
                  BIT* Address, BIT* WriteData, BIT* ReadData);
 void Extend_Sign16(const BIT* Input, BIT* Output);
+void Extend_Sign26(const BIT* Input, BIT* Output);
 void updateState();
 
 /******************************************************************************/
@@ -216,6 +220,24 @@ BIT  multiplexor4(BIT S0, BIT S1, BIT I0, BIT I1, BIT I2, BIT I3) {
     return or_gate(z0, z1);
 }
 
+void multiplexor4_32(BIT S0, BIT S1,
+                     BIT* I0, BIT* I1, BIT* I2, BIT* I3, BIT* Output) {
+    for (int i = 0; i < 32; ++i) {
+        BIT x0, x1, x2, x3 = FALSE;
+        decoder2(S0, S1, &x0, &x1, &x2, &x3);
+
+        BIT y0 = and_gate(x0, I0[i]);
+        BIT y1 = and_gate(x1, I1[i]);
+        BIT y2 = and_gate(x2, I2[i]);
+        BIT y3 = and_gate(x3, I3[i]);
+
+        BIT z0 = or_gate(y0, y1);
+        BIT z1 = or_gate(y2, y3);
+
+        Output[i] = or_gate(z0, z1);
+    }
+}
+
 void adder1(BIT A, BIT B, BIT CarryIn, BIT* CarryOut, BIT* Sum) {
     // Note: you can probably copy+paste this from your (or my) Lab 5 solution
 
@@ -272,6 +294,12 @@ void copy_bits(const BIT* A, BIT* B) {
     }
 }
 
+void copy_m_to_n_bits(const BIT* A, BIT* B, int m, int n) {
+    for (int i = m; i <= n; ++i) {
+        B[i] = A[i];
+    }
+}
+
 void print_binary(const BIT* A) {
     for (int i = 31; i >= 0; --i) {
         printf("%d", A[i]);
@@ -323,7 +351,6 @@ int  binary_to_integer5(const BIT* A) {
 
     return (int) a;
 }
-
 
 /******************************************************************************/
 /* Parsing functions */
@@ -591,6 +618,17 @@ void Extend_Sign16(const BIT* Input, BIT* Output) {
     }
 }
 
+void Extend_Sign26(const BIT* Input, BIT* Output) {
+    // TODO: Implement 26-bit to 32-bit sign extender
+    // Copy Input to Output, then extend 26th Input bit to 26-32 bits in Output
+    for (int i = 0; i < 26; ++i) {
+        Output[i] = Input[i];
+    }
+    for (int i = 26; i < 32; ++i) {
+        Output[i] = Input[25];
+    }
+}
+
 void updateState() {
     // TODO: Implement the full datapath here
     // Essentially, you'll be figuring out the order in which to process each of
@@ -603,6 +641,124 @@ void updateState() {
     // Memory - read/write data memory
     // Write Back - write to the register file
     // Update PC - determine the final PC value for the next instruction
+
+
+    // A. Fetch
+
+    BIT one[32];
+    convert_to_binary(1, one, 32);
+    BIT new_PC[32];
+    BIT Binvert = FALSE;
+    adder32(PC, one, Binvert, new_PC);
+    copy_bits(new_PC, PC);
+
+    BIT Instruction[32];
+    Instruction_Memory(PC, Instruction);
+
+
+    // B. Decode
+
+    BIT ins15_0[16];
+    copy_m_to_n_bits(Instruction, ins15_0, 0, 15);
+    BIT ins15_11[5];
+    copy_m_to_n_bits(Instruction, ins15_11, 11, 15);
+    BIT ins20_16[5];
+    copy_m_to_n_bits(Instruction, ins20_16, 16, 20);
+    BIT ins25_21[5];
+    copy_m_to_n_bits(Instruction, ins25_21, 21, 25);
+    BIT ins31_26[6];
+    copy_m_to_n_bits(Instruction, ins31_26, 26, 31);
+    BIT ins25_0[26];
+    copy_m_to_n_bits(Instruction, ins25_0, 0, 25);
+    BIT ins5_0[6];
+    copy_m_to_n_bits(Instruction, ins25_0, 0, 5);
+
+    Control(ins31_26, ins5_0);
+
+    BIT ReadData1[32];
+    BIT ReadData2[32];
+    Read_Register(ins25_21, ins20_16, ReadData1, ReadData2);
+    BIT reg1[32];
+    copy_bits(ReadData1, reg1);
+    BIT WriteData[32];
+    copy_bits(ReadData2, WriteData);
+
+    BIT extend_ins15_0[32];
+    Extend_Sign16(ins15_0, extend_ins15_0);
+
+
+    // C. Execute
+
+    BIT ALU_input2[32];
+    multiplexor2_32(ALUSrc, ReadData2, extend_ins15_0, ALU_input2);
+
+    ALU_Control(ins5_0);
+
+    BIT Result[32];
+    ALU(ReadData1, ALU_input2, Result);
+    BIT I0[32];
+    copy_bits(Result, I0);
+
+    BIT branch_address[32];
+    Binvert = FALSE;
+    adder32(PC, extend_ins15_0, Binvert, branch_address);
+
+
+    // D. Memory
+
+    BIT ReadData[32];
+    Data_Memory(MemWrite, MemRead, Result, WriteData, ReadData);
+
+    BIT I3[32] = {FALSE};
+    BIT Registers_WriteData[32];
+    multiplexor4_32(MemToReg[1], MemToReg[0], I0, ReadData, new_PC, I3, Registers_WriteData);
+
+
+    // E. Write Back
+
+    BIT WriteRegister[32];
+    BIT num_31[32];
+    convert_to_binary(31, num_31, 32);
+    multiplexor4_32(RegDst[1], RegDst[0], ins20_16, ins15_11, num_31, I3, WriteRegister);
+
+    Write_Register(WriteRegister, Registers_WriteData);
+
+
+    // F. Update PC
+    BIT mux1[32];
+    multiplexor2_32(and_gate(Branch, Zero), PC, branch_address, mux1);
+
+    BIT extend_ins25_0[32];
+    Extend_Sign26(ins25_0, extend_ins25_0);
+    BIT mux2[32];
+    multiplexor2_32(Jump, mux1, extend_ins25_0, mux2);
+
+    BIT mux3[32];
+    multiplexor2_32(JMPReg, mux2, reg1, mux3);
+
+    copy_bits(mux3, PC);
+
+
+    // G. Default
+    RegDst[1]     =  FALSE;
+    RegDst[0]     =  FALSE;
+    ALUSrc        =  FALSE;
+    MemToReg[1]   =  FALSE;
+    MemToReg[0]   =  FALSE;
+    RegWrite      =  FALSE;
+    MemRead       =  FALSE;
+    MemWrite      =  FALSE;
+    Branch        =  FALSE;
+    Jump          =  FALSE;
+    JMPReg        =  FALSE;
+    ALUOp[1]      =  FALSE;
+    ALUOp[0]      =  FALSE;
+
+    Zero          =  FALSE;
+    ALUControl[3] =  FALSE;
+    ALUControl[2] =  FALSE;
+    ALUControl[1] =  FALSE;
+    ALUControl[0] =  FALSE;
 }
 
 
