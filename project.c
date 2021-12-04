@@ -35,6 +35,7 @@ BIT THIRTY_TWO[32] = {FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
 /******************************************************************************/
 /* Function prototypes */
 /******************************************************************************/
+
 // gate
 BIT not_gate (BIT A);
 BIT or_gate  (BIT A, BIT B);
@@ -101,9 +102,11 @@ void Extend_Sign16(const BIT* Input, BIT* Output);
 void Extend_Sign26(const BIT* Input, BIT* Output);
 void updateState();
 
+
 /******************************************************************************/
 /* Functions provided for your convenience */
 /******************************************************************************/
+
 BIT  not_gate(BIT A) {
     if (A)
         return FALSE;
@@ -360,6 +363,7 @@ int  binary_to_integer5(const BIT* A) {
     return (int) a;
 }
 
+
 /******************************************************************************/
 /* Parsing functions */
 /******************************************************************************/
@@ -456,6 +460,7 @@ int  get_instructions(BIT Instructions[][32]) {
 /******************************************************************************/
 /* Program state - memory spaces, PC, and control */
 /******************************************************************************/
+
 BIT PC[32]                  = {FALSE};
 BIT MEM_Instruction[32][32] = {FALSE};
 BIT MEM_Data[32][32]        = {FALSE};
@@ -501,6 +506,7 @@ void print_state() {
 /******************************************************************************/
 /* Functions that you will implement */
 /******************************************************************************/
+
 void Instruction_Memory(BIT* ReadAddress, BIT* Instruction) {
     // TODO: Implement instruction memory
     // Input: 32-bit instruction address
