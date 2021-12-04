@@ -445,12 +445,12 @@ int get_instructions(BIT Instructions[][32]) {
     BIT reg3[128] = {FALSE};
     // binary instruction
     BIT opcode[6] = {FALSE};
-    BIT rs[5]     = {FALSE};
-    BIT rt[5]     = {FALSE};
-    BIT rd[5]     = {FALSE};
+    BIT rs[6]     = {FALSE};
+    BIT rt[6]     = {FALSE};
+    BIT rd[6]     = {FALSE};
     BIT immediate[16] = {FALSE};
     BIT address[26]   = {FALSE};
-    BIT func[6]       = {FALSE};
+    BIT func[7]       = {FALSE};
 
     while (fgets(line, 256, stdin) != NULL) {
         // TODO: perform conversion of instructions to binary
