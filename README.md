@@ -1,4 +1,4 @@
-# Computer-Organization-Project
+# Computer Organization Project
 
 ![License][License] ![RPs][RPs]
 
