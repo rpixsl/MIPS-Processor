@@ -677,7 +677,8 @@ void updateState() {
 
     BIT ReadData1[32];
     BIT ReadData2[32];
-    Read_Register(ins25_21, ins20_16, ReadData1, ReadData2);
+    Read_Register(ins25_21, ins20_16,
+                  ReadData1, ReadData2);
     BIT reg1[32];
     copy_bits(ReadData1, reg1);
     BIT WriteData[32];
@@ -690,7 +691,8 @@ void updateState() {
     // C. Execute
 
     BIT ALU_input2[32];
-    multiplexor2_32(ALUSrc, ReadData2, extend_ins15_0, ALU_input2);
+    multiplexor2_32(ALUSrc, ReadData2, extend_ins15_0,
+                    ALU_input2);
 
     ALU_Control(ins5_0);
 
@@ -711,7 +713,9 @@ void updateState() {
 
     BIT I3[32] = {FALSE};
     BIT Registers_WriteData[32];
-    multiplexor4_32(MemToReg[1], MemToReg[0], I0, ReadData, new_PC, I3, Registers_WriteData);
+    multiplexor4_32(MemToReg[1], MemToReg[0],
+                    I0, ReadData, new_PC, I3,
+                    Registers_WriteData);
 
 
     // E. Write Back
@@ -719,14 +723,18 @@ void updateState() {
     BIT WriteRegister[32];
     BIT num_31[32];
     convert_to_binary(31, num_31, 32);
-    multiplexor4_32(RegDst[1], RegDst[0], ins20_16, ins15_11, num_31, I3, WriteRegister);
+    multiplexor4_32(RegDst[1], RegDst[0],
+                    ins20_16, ins15_11, num_31, I3,
+                    WriteRegister);
 
     Write_Register(WriteRegister, Registers_WriteData);
 
 
     // F. Update PC
+
     BIT mux1[32];
-    multiplexor2_32(and_gate(Branch, Zero), PC, branch_address, mux1);
+    multiplexor2_32(and_gate(Branch, Zero),
+                    PC, branch_address, mux1);
 
     BIT extend_ins25_0[32];
     Extend_Sign26(ins25_0, extend_ins25_0);
@@ -740,6 +748,7 @@ void updateState() {
 
 
     // G. Default
+
     RegDst[1]     =  FALSE;
     RegDst[0]     =  FALSE;
     ALUSrc        =  FALSE;
