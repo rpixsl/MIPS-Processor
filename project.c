@@ -65,6 +65,7 @@ void adder1(BIT A, BIT B, BIT CarryIn, BIT* CarryOut, BIT* Sum);
 void adder32(BIT* A, BIT* B, BIT Binvert, BIT* Result);
 void and32(BIT* A, BIT* B, BIT* Result);
 void or32(BIT* A, BIT* B, BIT* Result);
+void slt32(BIT* A, BIT* B, BIT* Result);
 void nor32(BIT* A, BIT* B, BIT* Result);
 
 // bits operation
@@ -76,8 +77,15 @@ void convert_to_binary_char(int a, char* A, int length);
 int  binary_to_integer(const BIT* A);
 int  binary_to_integer5(const BIT* A);
 
-// get instructions
+// parsing functions
+void convert_opcode(char reg[], char reg_binary[]);
+void convert_reg(char reg[], char reg_binary[]);
+void convert_func(char reg[], char reg_binary[]);
 int  get_instructions(BIT Instructions[][32]);
+
+// Program state
+void print_instruction();
+void print_state();
 
 // component
 void Instruction_Memory(BIT* ReadAddress, BIT* Instruction);
@@ -358,6 +366,70 @@ int  binary_to_integer5(const BIT* A) {
 
 // TODO: Implement any helper functions to assist with parsing
 
+void convert_opcode(char reg[], char reg_binary[]) {
+    if ((strcmp(reg, "add") == 0) | (strcmp(reg, "sub") == 0) |
+        (strcmp(reg, "and") == 0) | (strcmp(reg, "or") == 0) |
+        (strcmp(reg, "slt") == 0) | (strcmp(reg, "jr") == 0)) {
+        strcpy(reg_binary, "000000");
+    } else if (strcmp(reg, "j") == 0) {
+        strcpy(reg_binary, "000010");
+    } else if (strcmp(reg, "jal") == 0) {
+        strcpy(reg_binary, "000011");
+    } else if (strcmp(reg, "beq") == 0) {
+        strcpy(reg_binary, "000100");
+    } else if (strcmp(reg, "addi") == 0) {
+        strcpy(reg_binary, "001000");
+    } else if (strcmp(reg, "lw") == 0) {
+        strcpy(reg_binary, "100011");
+    } else if (strcmp(reg, "sw") == 0) {
+        strcpy(reg_binary, "101011");
+    } else {
+        printf("Error: Unknown Register.\n");
+    }
+}
+
+void convert_reg(char reg[], char reg_binary[]) {
+    if (strcmp(reg, "zero") == 0) {
+        strcpy(reg_binary, "00000");
+    } else if (strcmp(reg, "v0") == 0) {
+        strcpy(reg_binary, "00010");
+    } else if (strcmp(reg, "a0") == 0) {
+        strcpy(reg_binary, "00100");
+    } else if (strcmp(reg, "t0") == 0) {
+        strcpy(reg_binary, "01000");
+    } else if (strcmp(reg, "t1") == 0) {
+        strcpy(reg_binary, "01001");
+    } else if (strcmp(reg, "s0") == 0) {
+        strcpy(reg_binary, "10000");
+    } else if (strcmp(reg, "s1") == 0) {
+        strcpy(reg_binary, "10001");
+    } else if (strcmp(reg, "sp") == 0) {
+        strcpy(reg_binary, "11101");
+    } else if (strcmp(reg, "ra") == 0) {
+        strcpy(reg_binary, "11111");
+    } else {
+        printf("Error: Unknown Register.\n");
+    }
+}
+
+void convert_func(char reg[], char reg_binary[]) {
+    if (strcmp(reg, "add") == 0) {
+        strcpy(reg_binary, "100000");
+    } else if (strcmp(reg, "sub") == 0) {
+        strcpy(reg_binary, "100010");
+    } else if (strcmp(reg, "and") == 0) {
+        strcpy(reg_binary, "100100");
+    } else if (strcmp(reg, "or") == 0) {
+        strcpy(reg_binary, "100101");
+    } else if (strcmp(reg, "slt") == 0) {
+        strcpy(reg_binary, "101010");
+    } else if (strcmp(reg, "jr") == 0) {
+        strcpy(reg_binary, "001000");
+    } else {
+        printf("Error: Unknown Register.\n");
+    }
+}
+
 int  get_instructions(BIT Instructions[][32]) {
     char line[256] = {0};
     int instruction_count = 0;
@@ -525,7 +597,9 @@ void Write_Register(BIT* WriteRegister, BIT* WriteData) {
     // Note: Implementation will again be similar to those above
     int write_register_index = binary_to_integer5(WriteRegister);
     BIT write_data[32];
-    multiplexor2_32(RegWrite, MEM_Register[write_register_index], WriteData, write_data);
+    multiplexor2_32(RegWrite,
+                    MEM_Register[write_register_index], WriteData,
+                    write_data);
     copy_bits(write_data, MEM_Register[write_register_index]);
 }
 
