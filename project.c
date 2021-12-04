@@ -492,7 +492,7 @@ void Write_Register(BIT* WriteRegister, BIT* WriteData) {
     // Input: one 5-bit register address, data to write, and control bit
     // Output: None, but will modify register file
     // Note: Implementation will again be similar to those above
-    int write_register_index = binary_to_integer(WriteRegister);
+    int write_register_index = binary_to_integer5(WriteRegister);
     BIT write_data[32];
     multiplexor2_32(RegWrite, MEM_Register[write_register_index], WriteData, write_data);
     copy_bits(write_data, MEM_Register[write_register_index]);
