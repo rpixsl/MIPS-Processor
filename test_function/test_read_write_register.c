@@ -240,7 +240,7 @@ void Write_Register(BIT RegWrite, BIT* WriteRegister, BIT* WriteData) {
 
 int main() {
     BIT ReadRegister1[5] = {FALSE, TRUE, TRUE, TRUE, TRUE}; // 1 1 1 1 0
-    BIT ReadRegister2[5] = {TRUE, TRUE, TRUE, TRUE, TRUE};  // 1 1 1 1 1s
+    BIT ReadRegister2[5] = {TRUE, TRUE, TRUE, TRUE, TRUE};  // 1 1 1 1 1
     BIT WriteRegister[5] = {TRUE, TRUE, TRUE, TRUE, TRUE};
 
     BIT ReadData1[32] = {FALSE};
