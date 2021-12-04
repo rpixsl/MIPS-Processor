@@ -83,7 +83,7 @@ void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
                    BIT* ReadData1, BIT* ReadData2);
 void Write_Register(BIT* WriteRegister, BIT* WriteData);
 void ALU_Control(const BIT* funct);
-void ALU(BIT* ALUControl, BIT* Input1, BIT* Input2, BIT* Zero, BIT* Result);
+void ALU(BIT* Input1, BIT* Input2, BIT* Result);
 void Data_Memory(BIT MemWrite, BIT MemRead,
                  BIT* Address, BIT* WriteData, BIT* ReadData);
 void Extend_Sign16(const BIT* Input, BIT* Output);
@@ -246,6 +246,15 @@ void or32(BIT* A, BIT* B, BIT* Result) {
     for (int i = 0; i < 32; ++i) {
         Result[i] = or_gate(A[i], B[i]);
     }
+}
+
+void slt32(BIT* A, BIT* B, BIT* Result) {
+    for (int i = 0; i < 32; ++i) {
+        Result[i] = FALSE;
+    }
+    BIT sub_result[32];
+    adder32(A, B, TRUE, sub_result);
+    Result[0] = sub_result[31];
 }
 
 void nor32(BIT* A, BIT* B, BIT* Result) {
@@ -506,7 +515,7 @@ void ALU_Control(const BIT* funct) {
     ALUControl[3] = and_gate(ALUOp[0], not_gate(ALUOp[0]));
 }
 
-void ALU(BIT* ALUControl, BIT* Input1, BIT* Input2, BIT* Zero, BIT* Result) {
+void ALU(BIT* Input1, BIT* Input2, BIT* Result) {
     // TODO: Implement 32-bit ALU
     // Input: 4-bit ALUControl, two 32-bit inputs
     // Output: 32-bit result, and zero flag big
@@ -536,7 +545,32 @@ void ALU(BIT* ALUControl, BIT* Input1, BIT* Input2, BIT* Zero, BIT* Result) {
                            not_gate(ALUControl[1]),
                            not_gate(ALUControl[0]));
 
-    BIT Binvert = or_gate(is_slt, is_sub);
+    BIT and_result[32];
+    and32(Input1, Input2, and_result);
+    BIT or_result[32];
+    or32(Input1, Input2, or_result);
+    BIT add_result[32];
+    adder32(Input1, Input2, FALSE, add_result);
+    BIT sub_result[32];
+    adder32(Input1, Input2, TRUE, sub_result);
+    BIT slt_result[32];
+    slt32(Input1, Input2, slt_result);
+    BIT nor_result[32];
+    nor32(Input1, Input2, nor_result);
+
+    for (int i = 0; i < 32; ++i) {
+        Result[i] = or_gate6(and_gate(is_and, and_result[i]),
+                             and_gate(is_or, or_result[i]),
+                             and_gate(is_add, add_result[i]),
+                             and_gate(is_sub, sub_result[i]),
+                             and_gate(is_slt, slt_result[i]),
+                             and_gate(is_nor, nor_result[i]));
+    }
+
+    for (int i = 0; i < 32; ++i) {
+        Zero = or_gate(Zero, sub_result[i]);
+    }
+    Zero = not_gate(Zero);
 }
 
 void Data_Memory(BIT MemWrite, BIT MemRead,
