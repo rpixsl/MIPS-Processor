@@ -39,8 +39,10 @@ BIT THIRTY_TWO[32] = {FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
 BIT not_gate (BIT A);
 BIT or_gate  (BIT A, BIT B);
 BIT or_gate3 (BIT A, BIT B, BIT C);
+BIT or_gate6(BIT A, BIT B, BIT C, BIT D, BIT E, BIT F);
 BIT and_gate (BIT A, BIT B);
 BIT and_gate3(BIT A, BIT B, BIT C);
+BIT and_gate4(BIT A, BIT B, BIT C, BIT D);
 BIT and_gate6(BIT A, BIT B, BIT C, BIT D, BIT E, BIT F);
 BIT xor_gate (BIT A, BIT B);
 BIT nor_gate (BIT A, BIT B);
@@ -58,10 +60,10 @@ BIT  multiplexor4(BIT S0, BIT S1, BIT I0, BIT I1, BIT I2, BIT I3);
 
 // ALU
 void adder1(BIT A, BIT B, BIT CarryIn, BIT* CarryOut, BIT* Sum);
-void ALU1(BIT A, BIT B, BIT Binvert, BIT CarryIn, BIT Less,
-          BIT Op0, BIT Op1, BIT* Result, BIT* CarryOut, BIT* Set);
-void ALU32(BIT* A, BIT* B, BIT Binvert, BIT CarryIn,
-           BIT Op0, BIT Op1, BIT* Result, BIT* CarryOut);
+void adder32(BIT* A, BIT* B, BIT Binvert, BIT* Result);
+void and32(BIT* A, BIT* B, BIT* Result);
+void or32(BIT* A, BIT* B, BIT* Result);
+void nor32(BIT* A, BIT* B, BIT* Result);
 
 // bits operation
 void copy_bits(const BIT* A, BIT* B);
@@ -108,6 +110,10 @@ BIT  or_gate3(BIT A, BIT B, BIT C) {
     return or_gate(A, or_gate(B, C));
 }
 
+BIT  or_gate6(BIT A, BIT B, BIT C, BIT D, BIT E, BIT F) {
+    return or_gate(or_gate3(A, B, C), or_gate3(D, E, F));
+}
+
 BIT  and_gate(BIT A, BIT B) {
     if (A && B)
         return TRUE;
@@ -117,6 +123,10 @@ BIT  and_gate(BIT A, BIT B) {
 
 BIT  and_gate3(BIT A, BIT B, BIT C) {
     return and_gate(A, and_gate(B, C));
+}
+
+BIT  and_gate4(BIT A, BIT B, BIT C, BIT D) {
+    return and_gate3(A, B, and_gate(C, D));
 }
 
 BIT  and_gate6(BIT A, BIT B, BIT C, BIT D, BIT E, BIT F) {
@@ -218,44 +228,30 @@ void adder1(BIT A, BIT B, BIT CarryIn, BIT* CarryOut, BIT* Sum) {
     *CarryOut = or_gate(y0, y1);
 }
 
-void ALU1(BIT A, BIT B, BIT Binvert, BIT CarryIn, BIT Less,
-          BIT Op0, BIT Op1, BIT* Result, BIT* CarryOut, BIT* Set) {
-    // TODO: implement a 1-bit ALU
-    // Note: this will need modifications from Lab 5 to account for 'slt'
-    // See slide "MSB ALU" in csci2500-f21-ch03a-slides.pdf
-
-    BIT x0 = multiplexor2(Binvert, B, not_gate(B));
-
-    BIT y0 = and_gate(A, x0);
-    BIT y1 = or_gate(A, x0);
-
-    BIT y2 = FALSE;
-    adder1(A, x0, CarryIn, CarryOut, &y2);
-    *Set = y2;
-
-    BIT y3 = Less;
-
-    *Result = multiplexor4(Op0, Op1, y0, y1, y2, y3);
+void adder32(BIT* A, BIT* B, BIT Binvert, BIT* Result) {
+    BIT CarryOut = Binvert;
+    for (int i = 0; i < 32; ++i) {
+        adder1(A[i], xor_gate(B[i], Binvert), CarryOut,
+               &CarryOut, &Result[i]);
+    }
 }
 
-void ALU32(BIT* A, BIT* B, BIT Binvert, BIT CarryIn,
-           BIT Op0, BIT Op1, BIT* Result, BIT* CarryOut) {
-    // TODO: implement a 32-bit ALU
-    // You'll need to essentially implement a 32-bit ripple adder here
-    // See slide "New 32-bit ALU" in csci2500-f21-ch03a-slides.pdf
-
-    BIT Less = FALSE;
-    BIT Set = FALSE;
-    ALU1(A[0], B[0], Binvert, CarryIn, Less,
-         Op0, Op1, &Result[0], CarryOut, &Set);
-    for (int i = 1; i < 32; ++i) {
-        ALU1(A[i], B[i], Binvert, *CarryOut, Less,
-             Op0, Op1, &Result[i], CarryOut, &Set);
+void and32(BIT* A, BIT* B, BIT* Result) {
+    for (int i = 0; i < 32; ++i) {
+        Result[i] = and_gate(A[i], B[i]);
     }
+}
 
-    Less = Set;
-    ALU1(A[0], B[0], Binvert, CarryIn, Less,
-         Op0, Op1, &Result[0], CarryOut, &Set);
+void or32(BIT* A, BIT* B, BIT* Result) {
+    for (int i = 0; i < 32; ++i) {
+        Result[i] = or_gate(A[i], B[i]);
+    }
+}
+
+void nor32(BIT* A, BIT* B, BIT* Result) {
+    for (int i = 0; i < 32; ++i) {
+        Result[i] = nor_gate(A[i], B[i]);
+    }
 }
 
 
@@ -515,6 +511,32 @@ void ALU(BIT* ALUControl, BIT* Input1, BIT* Input2, BIT* Zero, BIT* Result) {
     // Input: 4-bit ALUControl, two 32-bit inputs
     // Output: 32-bit result, and zero flag big
     // Note: Can re-use prior implementations (but need new circuitry for zero)
+    BIT is_and = and_gate4(not_gate(ALUControl[3]),
+                           not_gate(ALUControl[2]),
+                           not_gate(ALUControl[1]),
+                           not_gate(ALUControl[0]));
+    BIT is_or  = and_gate4(not_gate(ALUControl[3]),
+                           not_gate(ALUControl[2]),
+                           not_gate(ALUControl[1]),
+                           ALUControl[0]);
+    BIT is_add = and_gate4(not_gate(ALUControl[3]),
+                           not_gate(ALUControl[2]),
+                           ALUControl[1],
+                           not_gate(ALUControl[0]));
+    BIT is_sub = and_gate4(not_gate(ALUControl[3]),
+                           ALUControl[2],
+                           ALUControl[1],
+                           not_gate(ALUControl[0]));
+    BIT is_slt = and_gate4(not_gate(ALUControl[3]),
+                           ALUControl[2],
+                           ALUControl[1],
+                           ALUControl[0]);
+    BIT is_nor = and_gate4(ALUControl[3],
+                           ALUControl[2],
+                           not_gate(ALUControl[1]),
+                           not_gate(ALUControl[0]));
+
+    BIT Binvert = or_gate(is_slt, is_sub);
 }
 
 void Data_Memory(BIT MemWrite, BIT MemRead,
