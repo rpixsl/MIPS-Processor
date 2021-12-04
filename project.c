@@ -157,7 +157,7 @@ void decoder2(BIT I0, BIT I1, BIT* O0, BIT* O1, BIT* O2, BIT* O3) {
 }
 
 void decoder3(BIT* I, BIT EN, BIT* O) {
-    // TODO: implement 3-to-8 decoder using gates
+    // 3-to-8 decoder using gates
     O[0] = and_gate3(not_gate(I[2]), not_gate(I[1]), not_gate(I[0]));
     O[1] = and_gate3(not_gate(I[2]), not_gate(I[1]), I[0]);
     O[2] = and_gate3(not_gate(I[2]), I[1], not_gate(I[0]));
@@ -178,7 +178,7 @@ void decoder3(BIT* I, BIT EN, BIT* O) {
 }
 
 void decoder5(BIT* I, BIT* O) {
-    // TODO: implement 5-to-32 decoder using 2-to-4 and 3-to-8 decoders
+    // 5-to-32 decoder using 2-to-4 and 3-to-8 decoders
     BIT EN[4] = {FALSE};
     decoder2(I[3], I[4], &EN[0], &EN[1], &EN[2], &EN[3]);
     decoder3(I, EN[3], &O[24]);
@@ -217,7 +217,6 @@ BIT  multiplexor4(BIT S0, BIT S1, BIT I0, BIT I1, BIT I2, BIT I3) {
 }
 
 void adder1(BIT A, BIT B, BIT CarryIn, BIT* CarryOut, BIT* Sum) {
-    // TODO: implement a 1-bit adder
     // Note: you can probably copy+paste this from your (or my) Lab 5 solution
 
     BIT x0 = xor_gate(A, B);
