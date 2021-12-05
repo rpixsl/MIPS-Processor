@@ -40,7 +40,7 @@ BIT THIRTY_TWO[32] = {FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE,
 BIT not_gate (BIT A);
 BIT or_gate  (BIT A, BIT B);
 BIT or_gate3 (BIT A, BIT B, BIT C);
-BIT or_gate6(BIT A, BIT B, BIT C, BIT D, BIT E, BIT F);
+BIT or_gate6 (BIT A, BIT B, BIT C, BIT D, BIT E, BIT F);
 BIT and_gate (BIT A, BIT B);
 BIT and_gate3(BIT A, BIT B, BIT C);
 BIT and_gate4(BIT A, BIT B, BIT C, BIT D);
@@ -58,6 +58,8 @@ void decoder5(BIT* I, BIT* O);
 BIT  multiplexor2(BIT S, BIT I0, BIT I1);
 void multiplexor2_32(BIT S, BIT* I0, BIT* I1, BIT* Output);
 BIT  multiplexor4(BIT S0, BIT S1, BIT I0, BIT I1, BIT I2, BIT I3);
+void multiplexor4_5(BIT S0, BIT S1,
+                    BIT* I0, BIT* I1, BIT* I2, BIT* I3, BIT* Output);
 void multiplexor4_32(BIT S0, BIT S1,
                      BIT* I0, BIT* I1, BIT* I2, BIT* I3, BIT* Output);
 
@@ -71,7 +73,6 @@ void nor32(BIT* A, BIT* B, BIT* Result);
 
 // bits operation
 void copy_bits(const BIT* A, BIT* B);
-void copy_m_to_n_bits(const BIT* A, BIT* B, int m, int n);
 void print_binary(const BIT* A);
 void convert_to_binary(int a, BIT* A, int length);
 void convert_to_binary_char(int a, char* A, int length);
@@ -96,9 +97,8 @@ void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
 void Write_Register(BIT* WriteRegister, BIT* WriteData);
 void ALU_Control(const BIT* funct);
 void ALU(BIT* Input1, BIT* Input2, BIT* Result);
-void Data_Memory(BIT* Address, BIT* WriteData, BIT* ReadData);
+void Data_Memory(const BIT* Address, const BIT* WriteData, BIT* ReadData);
 void Extend_Sign16(const BIT* Input, BIT* Output);
-void Extend_Sign26(const BIT* Input, BIT* Output);
 void updateState();
 
 
@@ -230,6 +230,24 @@ BIT  multiplexor4(BIT S0, BIT S1, BIT I0, BIT I1, BIT I2, BIT I3) {
     return or_gate(z0, z1);
 }
 
+void multiplexor4_5(BIT S0, BIT S1,
+                     BIT* I0, BIT* I1, BIT* I2, BIT* I3, BIT* Output) {
+    for (int i = 0; i < 5; ++i) {
+        BIT x0, x1, x2, x3 = FALSE;
+        decoder2(S0, S1, &x0, &x1, &x2, &x3);
+
+        BIT y0 = and_gate(x0, I0[i]);
+        BIT y1 = and_gate(x1, I1[i]);
+        BIT y2 = and_gate(x2, I2[i]);
+        BIT y3 = and_gate(x3, I3[i]);
+
+        BIT z0 = or_gate(y0, y1);
+        BIT z1 = or_gate(y2, y3);
+
+        Output[i] = or_gate(z0, z1);
+    }
+}
+
 void multiplexor4_32(BIT S0, BIT S1,
                      BIT* I0, BIT* I1, BIT* I2, BIT* I3, BIT* Output) {
     for (int i = 0; i < 32; ++i) {
@@ -304,15 +322,9 @@ void copy_bits(const BIT* A, BIT* B) {
     }
 }
 
-void copy_m_to_n_bits(const BIT* A, BIT* B, int m, int n) {
-    for (int i = m; i <= n; ++i) {
-        B[i] = A[i];
-    }
-}
-
 void print_binary(const BIT* A) {
     for (int i = 31; i >= 0; --i) {
-        printf("%c", A[i]);
+        printf("%d", A[i]);
     }
 }
 
@@ -433,9 +445,8 @@ void convert_func(char reg[], char reg_binary[]) {
     }
 }
 
+int  instruction_count = 0; // counter: number of instruction
 int get_instructions(BIT Instructions[][32]) {
-    int  instruction_count = 0; // counter: number of instruction
-
     // mips instruction
     BIT op  [128] = {FALSE};
     BIT reg1[128] = {FALSE};
@@ -497,8 +508,29 @@ int get_instructions(BIT Instructions[][32]) {
                 Instructions[instruction_count][i+26] = opcode[5-i];
             }
         }
+        else if (strcmp(op, "beq") == 0) {
+            // convert mips code into binary instruction
+            convert_opcode(op, opcode);
+            convert_reg(reg2, rs);
+            convert_reg(reg1, rt);
+            convert_to_binary_char(atoi(reg3), immediate, 16);
+
+            // store 32-bit binary instruction in the 'Instructions'
+            for (int i = 0; i < 16; ++i) { // immediate: [15-0]
+                Instructions[instruction_count][i] = immediate[15-i];
+            }
+            for (int i = 0; i < 5; ++i) { // rt: [20-16]
+                Instructions[instruction_count][i+16] = rs[4-i];
+            }
+            for (int i = 0; i < 5; ++i) { // rs: [25-21]
+                Instructions[instruction_count][i+21] = rt[4-i];
+            }
+            for (int i = 0; i < 6; ++i) { // opcode: [31-26]
+                Instructions[instruction_count][i+26] = opcode[5-i];
+            }
+        }
         else if ((strcmp(op, "lw" ) == 0) | (strcmp(op, "sw"  ) == 0) |
-                 (strcmp(op, "beq") == 0) | (strcmp(op, "addi") == 0) ) {
+                 (strcmp(op, "addi") == 0) ) {
             // convert mips code into binary instruction
             convert_opcode(op, opcode);
             convert_reg(reg2, rs);
@@ -546,7 +578,7 @@ int get_instructions(BIT Instructions[][32]) {
                 Instructions[instruction_count][i+6] = '0';
             }
             for (int i = 0; i < 5; ++i) { // rd: [15-11]
-                Instructions[instruction_count][i+11] = '0';
+                Instructions[instruction_count][i+11] = '1';
             }
             for (int i = 0; i < 5; ++i) { // rt: [20-16]
                 Instructions[instruction_count][i+16] = '0';
@@ -560,6 +592,11 @@ int get_instructions(BIT Instructions[][32]) {
         }
         else {
             printf("Error: Unknown operation.\n");
+        }
+
+        for (int i = 0; i < 32; ++i){
+            Instructions[instruction_count][i] =
+                    (Instructions[instruction_count][i] == '1' ? TRUE : FALSE);
         }
 
         instruction_count++;
@@ -589,7 +626,7 @@ BIT Jump          =  FALSE ; // for j, jal instruction
 BIT JMPReg        =  FALSE ; // for jr instruction
 BIT ALUOp[2]      = {FALSE};
 
-BIT Zero          =  FALSE;
+BIT Zero          =  FALSE ;
 BIT ALUControl[4] = {FALSE};
 
 void print_instruction() {
@@ -624,8 +661,9 @@ void Instruction_Memory(BIT* ReadAddress, BIT* Instruction) {
     // Input: 32-bit instruction address
     // Output: 32-bit binary instruction
     // Note: Useful to use a 5-to-32 decoder here
-    for (int i = 0; i <= 31; i++) {
-        Instruction[i] = MEM_Instruction[binary_to_integer(ReadAddress)][i];
+    for (int i = 0; i < 32; i++) {
+        int index = binary_to_integer(ReadAddress);
+        Instruction[i] = MEM_Instruction[index][i];
     }
 }
 
@@ -688,7 +726,7 @@ void Control(const BIT* OpCode, const BIT* funct ) {
     ALUSrc      = or_gate3(lw, sw, addi);
     MemToReg[1] = jal;
     MemToReg[0] = lw;
-    RegWrite    = or_gate(or_gate(and_gate(R_type, not_gate(jr)) ,jal )  ,
+    RegWrite    = or_gate(or_gate(and_gate(R_type, not_gate(jr)) ,jal ),
                           or_gate(lw, addi) );
     MemRead  = lw;
     MemWrite = sw;
@@ -799,17 +837,20 @@ void ALU(BIT* Input1, BIT* Input2, BIT* Result) {
     Zero = not_gate(Zero);
 }
 
-void Data_Memory(BIT* Address, BIT* WriteData, BIT* ReadData) {
+void Data_Memory(const BIT* Address, const BIT* WriteData, BIT* ReadData) {
     // TODO: Implement data memory
     // Input: 32-bit address, control flags for read/write, and data to write
     // Output: data read if processing a lw instruction
     // Note: Implementation similar as above
-    for (int i = 0; i < 31; i++) {
-        int index = binary_to_integer(Address);
+
+    int index = binary_to_integer(Address);
+    for (int i = 0; i < 32; i++) {
+        // write data
         MEM_Data[index][i] = multiplexor2(MemWrite,
                                           MEM_Data[index][i],
                                           WriteData[i]);
-        ReadData[i] = and_gate(MEM_Register[index][i], MemRead);
+        // read data
+        ReadData[i] = and_gate(MEM_Data[index][i], MemRead);
     }
 }
 
@@ -821,17 +862,6 @@ void Extend_Sign16(const BIT* Input, BIT* Output) {
     }
     for (int i = 16; i < 32; ++i) {
         Output[i] = Input[15];
-    }
-}
-
-void Extend_Sign26(const BIT* Input, BIT* Output) {
-    // TODO: Implement 26-bit to 32-bit sign extender
-    // Copy Input to Output, then extend 26th Input bit to 26-32 bits in Output
-    for (int i = 0; i < 26; ++i) {
-        Output[i] = Input[i];
-    }
-    for (int i = 26; i < 32; ++i) {
-        Output[i] = Input[25];
     }
 }
 
@@ -848,112 +878,132 @@ void updateState() {
     // Write Back - write to the register file
     // Update PC - determine the final PC value for the next instruction
 
+    BIT Next_PC[32] = {FALSE};
+    BIT Instruction[32] = {FALSE};
 
-    // A. Fetch
+    BIT opcode[6] = {FALSE};
+    BIT rs[5] = {FALSE};
+    BIT rt[5] = {FALSE};
+    BIT rd[5] = {FALSE};
+    BIT func[6] = {FALSE};
+    BIT immediate[32] = {FALSE};
+    BIT address[26] = {FALSE};
+    BIT jal[5] = {FALSE};
 
-    BIT one[32];
-    convert_to_binary(1, one, 32);
-    BIT new_PC[32];
-    BIT Binvert = FALSE;
-    adder32(PC, one, Binvert, new_PC);
-    copy_bits(new_PC, PC);
+    // A. Fetch - load instruction from instruction memory
 
-    BIT Instruction[32];
+    // get next pc address: PC+1
+    copy_bits(PC, Next_PC);
+    adder32(Next_PC, ONE, FALSE, Next_PC);
+
+    // load instruction
     Instruction_Memory(PC, Instruction);
-
+    for (int i = 0; i < 6 ; i++) opcode[i] = Instruction[i+26];
+    for (int i = 0; i < 5 ; i++) rs[i] = Instruction[i+21];
+    for (int i = 0; i < 5 ; i++) rt[i] = Instruction[i+16];
+    for (int i = 0; i < 5 ; i++) rd[i] = Instruction[i+11];
+    for (int i = 0; i < 6 ; i++) func[i]      = Instruction[i];
+    for (int i = 0; i < 16; i++) immediate[i] = Instruction[i];
+    Extend_Sign16(immediate, immediate);
+    for (int i = 0; i < 26; i++) address[i]   = Instruction[i];
+    for (int i = 0; i < 5 ; i++) jal[i] = TRUE;
 
     // B. Decode
 
-    BIT ins15_0[16];
-    copy_m_to_n_bits(Instruction, ins15_0, 0, 15);
-    BIT ins15_11[5];
-    copy_m_to_n_bits(Instruction, ins15_11, 11, 15);
-    BIT ins20_16[5];
-    copy_m_to_n_bits(Instruction, ins20_16, 16, 20);
-    BIT ins25_21[5];
-    copy_m_to_n_bits(Instruction, ins25_21, 21, 25);
-    BIT ins31_26[6];
-    copy_m_to_n_bits(Instruction, ins31_26, 26, 31);
-    BIT ins25_0[26];
-    copy_m_to_n_bits(Instruction, ins25_0, 0, 25);
-    BIT ins5_0[6];
-    copy_m_to_n_bits(Instruction, ins25_0, 0, 5);
+    // set control bits
+    Control(opcode, func);
+    ALU_Control(func);
 
-    Control(ins31_26, ins5_0);
-
-    BIT ReadData1[32];
-    BIT ReadData2[32];
-    Read_Register(ins25_21, ins20_16,
+    // read from the register file
+    BIT Read_reg_1[32] = {FALSE}; // input
+    BIT Read_reg_2[32] = {FALSE}; // input
+    BIT ReadData1 [32] = {FALSE}; // output
+    BIT ReadData2 [32] = {FALSE}; // output
+    copy_bits(rs, Read_reg_1);
+    copy_bits(rt, Read_reg_2);
+    Read_Register(rs, rt,
                   ReadData1, ReadData2);
-    BIT reg1[32];
-    copy_bits(ReadData1, reg1);
-    BIT WriteData[32];
-    copy_bits(ReadData2, WriteData);
 
-    BIT extend_ins15_0[32];
-    Extend_Sign16(ins15_0, extend_ins15_0);
+    // C. Execute - process ALU
 
+    BIT ALU_input_1[32] = {FALSE}; // input
+    BIT ALU_input_2[32] = {FALSE}; // input
+    BIT ALU_result [32] = {FALSE}; // output
+    copy_bits(ReadData1, ALU_input_1);
+    multiplexor2_32(ALUSrc, ReadData2, immediate, ALU_input_2);
+    ALU(ALU_input_1, ALU_input_2, ALU_result);
 
-    // C. Execute
+    // D. Memory - read/write data memory
 
-    BIT ALU_input2[32];
-    multiplexor2_32(ALUSrc, ReadData2, extend_ins15_0,
-                    ALU_input2);
+    BIT Data_address[32]    = {FALSE}; // input
+    BIT Data_write_data[32] = {FALSE}; // input
+    BIT Data_read_data[32]  = {FALSE}; // output
+    copy_bits(ALU_result, Data_address);
+    copy_bits(ReadData2, Data_write_data);
+    Data_Memory(Data_address, Data_write_data,
+                Data_read_data);
 
-    ALU_Control(ins5_0);
+    // E. Write Back - write to the register file
 
-    BIT Result[32];
-    ALU(ReadData1, ALU_input2, Result);
-    BIT I0[32];
-    copy_bits(Result, I0);
+    BIT WriteRegister[32] = {FALSE}; // input
+    BIT WriteData[32]     = {FALSE}; // input
+    multiplexor4_5(RegDst[0], RegDst[1],
+                     rt, rd, jal, REG_THIRTY_ONE,
+                     WriteRegister);
+    multiplexor4_32(MemToReg[0], MemToReg[1],
+                    ALU_result, Data_read_data, Next_PC, ZERO,
+                    WriteData);
+    Write_Register(WriteRegister, WriteData);
 
-    BIT branch_address[32];
-    Binvert = FALSE;
-    adder32(PC, extend_ins15_0, Binvert, branch_address);
+    // F. Update PC - determine the final PC value for the next instruction
+    //    Consist one adder and three mux(s)
 
+    // adder
+    BIT Adder_input_1[32] = {FALSE}; // input  of adder
+    BIT Adder_input_2[32] = {FALSE}; // input  of adder
+    BIT BranchTarget [32] = {FALSE}; // output of adder , input of mux_1
+    copy_bits(Next_PC, Adder_input_1);
+    copy_bits(immediate, Adder_input_2);
+    adder32(Adder_input_1, Adder_input_2,
+            FALSE, BranchTarget);
 
-    // D. Memory
+    // mux_1  --  for branch
+    BIT mux_1_control = FALSE;     // control of mux_1
+    BIT mux_1_input_1[32] = {FALSE}; // input  of mux_1
+    BIT mux_1_input_2[32] = {FALSE}; // input  of mux_1, output of adder
+    BIT mux_1_output [32] = {FALSE}; // output of mux_1, input of mux_2
+    copy_bits(Next_PC, mux_1_input_1);
+    copy_bits(BranchTarget, mux_1_input_2);
+    mux_1_control = and_gate(Branch, Zero);
+    multiplexor2_32(mux_1_control, mux_1_input_1, mux_1_input_2,
+                    mux_1_output);
 
-    BIT ReadData[32];
-    Data_Memory(Result, WriteData, ReadData);
+    // mux_2  --  for j, jal
+    BIT mux_2_control = FALSE;     // control of mux_2
+    BIT mux_2_input_1[32] = {FALSE}; // input  of mux_2, output of mux_1
+    BIT mux_2_input_2[32] = {FALSE}; // input  of mux_2
+    BIT mux_2_output [32] = {FALSE}; // output of mux_2, input  of mux_3
+    mux_2_control = Jump;
+    copy_bits(mux_1_output, mux_2_input_1);
+    for (int i = 0; i < 26; ++i) mux_2_input_2[i] = address[i];
+    multiplexor2_32(mux_2_control, mux_2_input_1, mux_2_input_2,
+                    mux_2_output);
 
-    BIT I3[32] = {FALSE};
-    BIT Registers_WriteData[32];
-    multiplexor4_32(MemToReg[1], MemToReg[0],
-                    I0, ReadData, new_PC, I3,
-                    Registers_WriteData);
+    // mux_3  --  for jr
+    BIT mux_3_control = FALSE;     // control of mux_3
+    BIT mux_3_input_1[32] = {FALSE}; // input of mux_3 , output of mux_2
+    BIT mux_3_input_2[32] = {FALSE}; // input of mux_3
+    BIT mux_3_output [32] = {FALSE}; // output of mux_3, final PC address
+    mux_3_control = JMPReg;
+    copy_bits(mux_2_output, mux_3_input_1);
+    copy_bits(ReadData1, mux_3_input_2);
+    multiplexor2_32(mux_3_control, mux_3_input_1, mux_3_input_2,
+                    mux_3_output);
 
+    // update the PC
+    copy_bits(mux_3_output, PC);
 
-    // E. Write Back
-
-    BIT WriteRegister[32];
-    BIT num_31[32];
-    convert_to_binary(31, num_31, 32);
-    multiplexor4_32(RegDst[1], RegDst[0],
-                    ins20_16, ins15_11, num_31, I3,
-                    WriteRegister);
-
-    Write_Register(WriteRegister, Registers_WriteData);
-
-
-    // F. Update PC
-
-    BIT mux1[32];
-    multiplexor2_32(and_gate(Branch, Zero),
-                    PC, branch_address, mux1);
-
-    BIT extend_ins25_0[32];
-    Extend_Sign26(ins25_0, extend_ins25_0);
-    BIT mux2[32];
-    multiplexor2_32(Jump, mux1, extend_ins25_0, mux2);
-
-    BIT mux3[32];
-    multiplexor2_32(JMPReg, mux2, reg1, mux3);
-
-    copy_bits(mux3, PC);
-
-
-    // G. Default
+    // G. Default all the control signal
 
     RegDst[1]     =  FALSE;
     RegDst[0]     =  FALSE;
