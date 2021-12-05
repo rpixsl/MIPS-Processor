@@ -1,5 +1,5 @@
 /*
-Class Project: The logical conclusion (v2.0)
+Class Project: The logical conclusion (v3.0)
 CSCI-2500 Fall 2021
 */
 
@@ -77,7 +77,6 @@ void print_binary(const BIT* A);
 void convert_to_binary(int a, BIT* A, int length);
 void convert_to_binary_char(int a, char* A, int length);
 int  binary_to_integer(const BIT* A);
-int  binary_to_integer5(const BIT* A);
 
 // parsing functions
 void convert_opcode(char reg[], char reg_binary[]);
@@ -355,18 +354,6 @@ int  binary_to_integer(const BIT* A) {
     unsigned mult = 1;
 
     for (int i = 0; i < 32; ++i) {
-        a += A[i] * mult;
-        mult *= 2;
-    }
-
-    return (int) a;
-}
-
-int  binary_to_integer5(const BIT* A) {
-    unsigned a = 0;
-    unsigned mult = 1;
-
-    for (int i = 0; i < 5; ++i) {
         a += A[i] * mult;
         mult *= 2;
     }
@@ -749,8 +736,10 @@ void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
     decoder5(ReadRegister2, read_index2);
 
     for (int i = 0; i < 32; i++) {
-        multiplexor2_32(or_gate(read_index1[i], ZERO[i]), ReadData1, MEM_Register[i], ReadData1);
-        multiplexor2_32(or_gate(read_index2[i], ZERO[i]), ReadData2, MEM_Register[i], ReadData2);
+        multiplexor2_32(or_gate(read_index1[i], ZERO[i]),
+                        ReadData1, MEM_Register[i], ReadData1);
+        multiplexor2_32(or_gate(read_index2[i], ZERO[i]),
+                        ReadData2, MEM_Register[i], ReadData2);
     }
 }
 
@@ -763,7 +752,8 @@ void Write_Register(BIT* WriteRegister, BIT* WriteData) {
     decoder5(WriteRegister, write_index);
 
     for (int i = 0; i < 32; i++) {
-        multiplexor2_32(and_gate(RegWrite, write_index[i]), MEM_Register[i], WriteData, MEM_Register[i]);
+        multiplexor2_32(and_gate(RegWrite, write_index[i]),
+                        MEM_Register[i], WriteData, MEM_Register[i]);
     }
 }
 
