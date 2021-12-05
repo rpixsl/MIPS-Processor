@@ -1,5 +1,5 @@
 /*
-Class Project: The logical conclusion (v1.1)
+Class Project: The logical conclusion (v2.0)
 CSCI-2500 Fall 2021
 */
 
@@ -96,8 +96,7 @@ void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
 void Write_Register(BIT* WriteRegister, BIT* WriteData);
 void ALU_Control(const BIT* funct);
 void ALU(BIT* Input1, BIT* Input2, BIT* Result);
-void Data_Memory(BIT MemWrite, BIT MemRead,
-                 BIT* Address, BIT* WriteData, BIT* ReadData);
+void Data_Memory(BIT* Address, BIT* WriteData, BIT* ReadData);
 void Extend_Sign16(const BIT* Input, BIT* Output);
 void Extend_Sign26(const BIT* Input, BIT* Output);
 void updateState();
@@ -313,7 +312,7 @@ void copy_m_to_n_bits(const BIT* A, BIT* B, int m, int n) {
 
 void print_binary(const BIT* A) {
     for (int i = 31; i >= 0; --i) {
-        printf("%d", A[i]);
+        printf("%c", A[i]);
     }
 }
 
@@ -625,6 +624,9 @@ void Instruction_Memory(BIT* ReadAddress, BIT* Instruction) {
     // Input: 32-bit instruction address
     // Output: 32-bit binary instruction
     // Note: Useful to use a 5-to-32 decoder here
+    for (int i = 0; i <= 31; i++) {
+        Instruction[i] = MEM_Instruction[binary_to_integer(ReadAddress)][i];
+    }
 }
 
 void Control(const BIT* OpCode, const BIT* funct ) {
@@ -797,12 +799,18 @@ void ALU(BIT* Input1, BIT* Input2, BIT* Result) {
     Zero = not_gate(Zero);
 }
 
-void Data_Memory(BIT MemWrite, BIT MemRead,
-                 BIT* Address, BIT* WriteData, BIT* ReadData) {
+void Data_Memory(BIT* Address, BIT* WriteData, BIT* ReadData) {
     // TODO: Implement data memory
     // Input: 32-bit address, control flags for read/write, and data to write
     // Output: data read if processing a lw instruction
     // Note: Implementation similar as above
+    for (int i = 0; i < 31; i++) {
+        int index = binary_to_integer(Address);
+        MEM_Data[index][i] = multiplexor2(MemWrite,
+                                          MEM_Data[index][i],
+                                          WriteData[i]);
+        ReadData[i] = and_gate(MEM_Register[index][i], MemRead);
+    }
 }
 
 void Extend_Sign16(const BIT* Input, BIT* Output) {
@@ -907,7 +915,7 @@ void updateState() {
     // D. Memory
 
     BIT ReadData[32];
-    Data_Memory(MemWrite, MemRead, Result, WriteData, ReadData);
+    Data_Memory(Result, WriteData, ReadData);
 
     BIT I3[32] = {FALSE};
     BIT Registers_WriteData[32];
