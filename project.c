@@ -743,10 +743,15 @@ void Read_Register(BIT* ReadRegister1, BIT* ReadRegister2,
     // Input: two 5-bit register addresses
     // Output: the values of the specified registers in ReadData1 and ReadData2
     // Note: Implementation will be very similar to instruction memory circuit
-    int register1_index = binary_to_integer5(ReadRegister1);
-    int register2_index = binary_to_integer5(ReadRegister2);
-    copy_bits(MEM_Register[register1_index], ReadData1);
-    copy_bits(MEM_Register[register2_index], ReadData2);
+    BIT read_index1[32] = {FALSE};
+    BIT read_index2[32] = {FALSE};
+    decoder5(ReadRegister1, read_index1);
+    decoder5(ReadRegister2, read_index2);
+
+    for (int i = 0; i < 32; i++) {
+        multiplexor2_32(or_gate(read_index1[i], ZERO[i]), ReadData1, MEM_Register[i], ReadData1);
+        multiplexor2_32(or_gate(read_index2[i], ZERO[i]), ReadData2, MEM_Register[i], ReadData2);
+    }
 }
 
 void Write_Register(BIT* WriteRegister, BIT* WriteData) {
@@ -754,12 +759,12 @@ void Write_Register(BIT* WriteRegister, BIT* WriteData) {
     // Input: one 5-bit register address, data to write, and control bit
     // Output: None, but will modify register file
     // Note: Implementation will again be similar to those above
-    int write_register_index = binary_to_integer5(WriteRegister);
-    BIT write_data[32];
-    multiplexor2_32(RegWrite,
-                    MEM_Register[write_register_index], WriteData,
-                    write_data);
-    copy_bits(write_data, MEM_Register[write_register_index]);
+    BIT write_index[32] = {FALSE};
+    decoder5(WriteRegister, write_index);
+
+    for (int i = 0; i < 32; i++) {
+        multiplexor2_32(and_gate(RegWrite, write_index[i]), MEM_Register[i], WriteData, MEM_Register[i]);
+    }
 }
 
 void ALU_Control(const BIT* funct) {
