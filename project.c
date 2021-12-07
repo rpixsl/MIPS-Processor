@@ -565,7 +565,7 @@ int get_instructions(BIT Instructions[][32]) {
                 Instructions[instruction_count][i+6] = '0';
             }
             for (int i = 0; i < 5; ++i) { // rd: [15-11]
-                Instructions[instruction_count][i+11] = '1';
+                Instructions[instruction_count][i+11] = '0';
             }
             for (int i = 0; i < 5; ++i) { // rt: [20-16]
                 Instructions[instruction_count][i+16] = '0';
