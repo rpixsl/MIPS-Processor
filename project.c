@@ -1,6 +1,7 @@
 /*
-Class Project: The logical conclusion (v3.0)
+Class Project: The logical conclusion
 CSCI-2500 Fall 2021
+Team: chut, dengb3, qit3, wangk19, wangs27
 */
 
 /******************************************************************************/
@@ -963,18 +964,18 @@ void updateState() {
             FALSE, BranchTarget);
 
     // mux_1  --  for branch
-    BIT mux_1_control = FALSE;     // control of mux_1
+    BIT mux_1_control = FALSE;      // control of mux_1: "Branch" * "Zero"
     BIT mux_1_input_1[32] = {FALSE}; // input  of mux_1
     BIT mux_1_input_2[32] = {FALSE}; // input  of mux_1, output of adder
     BIT mux_1_output [32] = {FALSE}; // output of mux_1, input of mux_2
+    mux_1_control = and_gate(Branch, Zero);
     copy_bits(Next_PC, mux_1_input_1);
     copy_bits(BranchTarget, mux_1_input_2);
-    mux_1_control = and_gate(Branch, Zero);
     multiplexor2_32(mux_1_control, mux_1_input_1, mux_1_input_2,
                     mux_1_output);
 
     // mux_2  --  for j, jal
-    BIT mux_2_control = FALSE;     // control of mux_2
+    BIT mux_2_control = FALSE;      // control of mux_2: "Jump"
     BIT mux_2_input_1[32] = {FALSE}; // input  of mux_2, output of mux_1
     BIT mux_2_input_2[32] = {FALSE}; // input  of mux_2
     BIT mux_2_output [32] = {FALSE}; // output of mux_2, input  of mux_3
@@ -985,9 +986,9 @@ void updateState() {
                     mux_2_output);
 
     // mux_3  --  for jr
-    BIT mux_3_control = FALSE;     // control of mux_3
-    BIT mux_3_input_1[32] = {FALSE}; // input of mux_3 , output of mux_2
-    BIT mux_3_input_2[32] = {FALSE}; // input of mux_3
+    BIT mux_3_control = FALSE;      // control of mux_3: "JMPReg"
+    BIT mux_3_input_1[32] = {FALSE}; // input  of mux_3, output of mux_2
+    BIT mux_3_input_2[32] = {FALSE}; // input  of mux_3
     BIT mux_3_output [32] = {FALSE}; // output of mux_3, final PC address
     mux_3_control = JMPReg;
     copy_bits(mux_2_output, mux_3_input_1);
