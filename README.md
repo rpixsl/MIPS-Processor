@@ -1,4 +1,4 @@
-# Computer Organization Project
+# MIPS Processor in C
 
 ![License][License] ![RPs][RPs]
 
