@@ -3,15 +3,6 @@
 ![License][License] ![RPs][RPs]
 
 
-## Content
-MIPS Processor in C  
-
-## History
-
-
-Version 1.1 (2021-12-03)
-
-
 ## Authors and acknowledgment
 - Shijie Wang (@wsj20010128) 
 - Tianrui Qi (@tianrui-qi) 
